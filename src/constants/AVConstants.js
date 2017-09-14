@@ -1,0 +1,21 @@
+
+const AV_TIME_SERIES = {
+    INTRADAY: "TIME_SERIES_INTRADAY",
+    DAILY: "TIME_SERIES_DAILY",
+    DAILY_ADJ: "TIME_SERIES_DAILY_ADJUSTED",
+    WEEKLY: "TIME_SERIES_WEEKLY",
+    MONTHLY: "TIME_SERIES_MONTHLY"
+};
+
+const AV_TIME_INTERVALS = {
+    ONE_MIN: "1min",
+    FIVE_MIN: "5min",
+    FIFTEEN_MIN: "15min",
+    HALF_HOUR: "30min",
+    HOUR: "60min"
+}
+
+module.exports = {
+    AV_TIME_SERIES,
+    AV_TIME_INTERVALS
+}

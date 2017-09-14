@@ -1,0 +1,25 @@
+{
+  "name": "Stock-Relations",
+  "version": "0.1.0",
+  "description": "A way to find relations amongst stocks using graph theory",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "test:unit"
+  },
+  "author": "Daniel Lopez",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "react-scripts": "^1.0.13",
+    "semistandard": "^11.0.0",
+    "snazzy": "^7.0.0"
+  },
+  "dependencies": {
+    "colors": "^1.1.2",
+    "es6-promisify": "^5.0.0",
+    "fs-extra": "^4.0.2",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1"
+  }
+}
