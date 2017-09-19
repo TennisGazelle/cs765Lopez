@@ -1,26 +1,22 @@
-const logger = require('./logger/logger');
-const avClient = require('./clients/AlphaVantageClient');
+import React from 'react'
+import { render } from 'react-dom'
+import { Provider } from 'react-redux'
+import { ConnectedRouter } from 'react-router-redux'
+import store, { history } from './store'
+import App from './containers/app'
 
-const run = () => {
-    logger.info('Starting');
-    logger.info('getting apple information');
-    let promises = [];
-    promises.push(avClient.getInformationAbout({
-        symbol: "AAPL"
-    }));
-    
-    Promise.all(promises)
-        .then((infos) => {
-            console.log(JSON.stringify(infos[0]));
-        })
-        .catch((err) => {
-            logger.error(err);
-        });
-        
-    setTimeout(() => {
-        logger.info("waited");
-    }, 3000);
-    
-}
+import 'sanitize.css/sanitize.css'
+import './index.css'
 
-run();
+const target = document.querySelector('#root')
+
+render(
+  <Provider store={store}>
+    <ConnectedRouter history={history}>
+      <div>
+        <App />
+      </div>
+    </ConnectedRouter>
+  </Provider>,
+  target
+)
