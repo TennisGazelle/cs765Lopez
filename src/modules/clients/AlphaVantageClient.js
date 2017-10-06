@@ -23,11 +23,11 @@ class AlphaVantageClient {
             })
             .then((res) => {
                 logger.info(res);
-                resolve(res)
+                return resolve(res)
             })
             .catch((err) => {
                 logger.error('Error in fetching: URL:' + url + ' ' + err);
-                reject(err);
+                return reject(err);
             });
         });
     }
@@ -59,7 +59,17 @@ class AlphaVantageClient {
             });
         });
     }
+
+    render() {
+        return(
+            <div>
+                {this.getInformationAbout({ symbol: 'AAPL' })}
+            </div>
+        );
+    }
 }
 
 const avClient = new AlphaVantageClient();
-module.exports = avClient;
+module.export = {
+    avClient
+};

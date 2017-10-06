@@ -3,6 +3,8 @@
 import json
 import requests
 import shutil
+import numpy as np
+import matplotlib.pyplot as plt
 
 AV_TIME_SERIES = {
     "INTRADAY":   "TIME_SERIES_INTRADAY",
@@ -24,27 +26,42 @@ def stock_main():
     appleInfo = getAppleInfo()
     low = []
     high = []
+    openP = []
+    close = []
     
-    for d in sorted(appleInfo["Time Series (Daily)"].items()):
-        low = low + [d[1]["3. low"]]
-        high = high + [d[1]["2. high"]]
+    highest = 0
+    lowest = 10000
+    for d in sorted(appleInfo["Time Series (5min)"].items()):
+        openP = openP + [float(d[1]["1. open"])]
+        high = high + [float(d[1]["2. high"])]
+        low = low + [float(d[1]["3. low"])]
+        close = close + [float(d[1]["4. close"])]
+        highest = max([highest, openP[-1], high[-1], low[-1], close[-1]])
+        lowest = min([lowest, openP[-1], high[-1], low[-1], close[-1]])
+
+    print ("range is ({},{})".format(lowest, highest))        
         
-        
-    print (json.dumps(low, indent = 3))
+    #print (json.dumps(low, indent = 3))
+    extra = 0.05 * (highest - lowest)
+    plt.fill_between(range(0, len(low)), low, high, facecolor='black')
+    plt.plot(range(0, len(openP)), openP, linewidth=2.0)
+    plt.plot(range(0, len(close)), close, linewidth=2.0)
+    plt.axis([0, len(low), lowest - extra, highest + extra])
+    plt.show()
     
 def getAppleInfo():
     api_key = "5SEHLSGGK55MEPL1"
     parameters = {
-        "function": AV_TIME_SERIES["DAILY"],
+        "function": AV_TIME_SERIES["INTRADAY"],
         "symbol":   "AAPL",
-        "interval": AV_TIME_INTERVALS["ONE_MIN"],
+        "interval": AV_TIME_INTERVALS["FIVE_MIN"],
         "apikey":   api_key
     }
     
     r = requests.get('https://www.alphavantage.co/query', params=parameters)
     #r = requests.get("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=MSFT&interval=1min&apikey=" + api_key)
     
-    #print (json.dumps(r.json(), indent = 3))
+    print (json.dumps(r.json(), indent = 3))
     print ("url:", r.url)
     return r.json()
 
