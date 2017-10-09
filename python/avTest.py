@@ -5,6 +5,7 @@ import requests
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
+from graph_tool.all import *
 
 AV_TIME_SERIES = {
     "INTRADAY":   "TIME_SERIES_INTRADAY",
@@ -23,80 +24,82 @@ AV_TIME_INTERVALS = {
 }
 
 def stock_main():
-    appleInfo = getAppleInfo()
+    appleInfo = getStockInfo("AAPL")
     low = []
     high = []
-    openP = []
+    open = []
     close = []
     
     highest = 0
     lowest = 10000
     for d in sorted(appleInfo["Time Series (5min)"].items()):
-        openP = openP + [float(d[1]["1. open"])]
+        open = open + [float(d[1]["1. open"])]
         high = high + [float(d[1]["2. high"])]
         low = low + [float(d[1]["3. low"])]
         close = close + [float(d[1]["4. close"])]
-        highest = max([highest, openP[-1], high[-1], low[-1], close[-1]])
-        lowest = min([lowest, openP[-1], high[-1], low[-1], close[-1]])
+        highest = max([highest, open[-1], high[-1], low[-1], close[-1]])
+        lowest = min([lowest, open[-1], high[-1], low[-1], close[-1]])
 
-    print ("range is ({},{})".format(lowest, highest))        
-        
-    #print (json.dumps(low, indent = 3))
+    print ("range is ({},{})".format(lowest, highest))
+
+    ug = Graph(directed = False)
+    vertex_name = ug.new_vertex_property("string")
+    vertex_value = ug.new_vertex_property("float")
+    ug.vertex_properties["name"] = vertex_name
+    ug.vertex_properties["value"] = vertex_value
+    
+    v1 = ug.add_vertex()
+    vertex_name[v1] = "APPL"
+    vertex_value[v1] = high[-1]
+
+    v2 = ug.add_vertex()
+    vertex_name[v2] = "NEW STOCK"
+    vertex_value[v2] = "100"
+
+    edge = ug.add_edge(v1, v2)
+
+    graph_draw(ug, vertex_text = ug.vertex_properties["name"], vertex_font_size = 18, output_size = (600, 600), output = "graph.png")
+
     extra = 0.05 * (highest - lowest)
     plt.fill_between(range(0, len(low)), low, high, facecolor='black')
-    plt.plot(range(0, len(openP)), openP, linewidth=2.0)
-    plt.plot(range(0, len(close)), close, linewidth=2.0)
+    plt.plot(range(0, len(open)), open, linewidth=0.5)
+    plt.plot(range(0, len(close)), close, linewidth=0.5)
     plt.axis([0, len(low), lowest - extra, highest + extra])
-    plt.show()
+    #plt.show()
     
-def getAppleInfo():
+def getStockInfo(symbol):
     api_key = "5SEHLSGGK55MEPL1"
     parameters = {
+        "symbol":   symbol,
         "function": AV_TIME_SERIES["INTRADAY"],
-        "symbol":   "AAPL",
-        "interval": AV_TIME_INTERVALS["FIVE_MIN"],
+        "interval": AV_TIME_INTERVALS["ONE_MIN"],
         "apikey":   api_key
     }
     
     r = requests.get('https://www.alphavantage.co/query', params=parameters)
     #r = requests.get("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=MSFT&interval=1min&apikey=" + api_key)
     
-    print (json.dumps(r.json(), indent = 3))
-    print ("url:", r.url)
-    return r.json()
+    #print (json.dumps(r.json(), indent = 3))
+    #print ("url:", r.url)
+    return r.json()['Meta Data']
 
-def movie_main():
-    movie_title = raw_input("What movie do you want to know more about?: ")
-
-    movie_request = {
-        't' : movie_title,
-        'plot' : 'full',
-        'tomatoes' : True,
-        'r' : 'json'
-    }
-
-    r = requests.get('http://omdbapi.com/', params=movie_request, verify=False)
-    print ("The URL was:", r.url)
-    print (json.dumps( r.json(), indent = 3 ))
-
-    print ("this is the url ", r.json()['Poster'])
-
-    local_pic = movie_title + ' picture.jpg'
-
-    pic = requests.get( r.json()["Poster"], stream=True )
-    with open( local_pic, 'wb' ) as outfile:
-        shutil.copyfileobj( pic.raw, outfile )
-
-    #Image.open( local_pic ).show()
-
-
-    #r = requests.get('https://api.github.com/user', auth=('user','pass'))
-    #print r.headers
-    #print r.encoding
-    #print r.text
 
 def main():
-     stock_main()
+    #stock_main()
+    stock_names = [
+        "M",
+        "LMT",
+        "GRUB",
+        "TVIAQ",
+        "T",
+        "BUD",
+        "MMM",
+        "SHOO"
+    ]
+        #"CCV",
+    #stock = stock_names[-1]
+    for stock in stock_names:
+        print(json.dumps(getStockInfo(stock), indent = 3))
 
 if __name__ == '__main__':
     main()
