@@ -5,9 +5,16 @@
 #ifndef MAIN_STOCK_H
 #define MAIN_STOCK_H
 
+#include <string>
+#include <vector>
+
+using namespace std;
 
 class Stock {
-
+public:
+    string symbol;
+    vector<float> data;
+    void print() const;
 };
 
 
