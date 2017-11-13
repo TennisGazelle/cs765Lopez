@@ -12,7 +12,9 @@ Logger::Logger(const string& _outputFileName) : outputFileName(_outputFileName),
 }
 
 Logger::~Logger() {
-    outputToFile();
+    if (outputLocation == FILE) {
+        outputToFile();
+    }
 }
 
 void Logger::log(const string& logMessage) {
@@ -25,7 +27,7 @@ void Logger::log(const string& logMessage) {
 
 void Logger::outputToFile() {
     ofstream fout(outputFileName.c_str());
-    for (string s : this->logs) {
+    for (const string &s : this->logs) {
         fout << s << endl;
     }
     fout.close();

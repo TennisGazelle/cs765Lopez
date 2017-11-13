@@ -6,51 +6,49 @@
 
 using namespace std;
 
+bool shootWithProbability(double prob) {
+    double shot = double(rand())/double(RAND_MAX);
+    return (shot <= prob);
+}
+
 int main(int argc, char *argv[]) {
+    srand((unsigned int)time(nullptr));
     Timer timer;
     timer.start();
-    Logger logger("../out/somefile.log");
+    Logger logger;
     logger.log("hello world");
     timer.stop();
     cout << "writing to file took " << timer.getElapsedTime() << " seconds." << endl;
 
-    Portfolio p1, p2;
-
     Market market;
-    Stock s1, s2;
+    Stock appleStock, spotStock;
 
-    s1.symbol = "A";
-    s1.data.push_back(1.0);
-    s1.data.push_back(2.0);
-    s1.data.push_back(3.0);
-    s1.data.push_back(4.0);
-    s1.data.push_back(0.5);
+    appleStock.symbol = "AAPL";
+    appleStock.getValuesFromFile();
 
-    s2.symbol = "B";
-    s2.data.push_back(1.0);
-    s2.data.push_back(3.0);
-    s2.data.push_back(5.0);
-    s2.data.push_back(7.0);
-    s2.data.push_back(0.2);
+    spotStock.symbol = "SPOT";
+    spotStock.getValuesFromFile();
 
-    market.push_back(s1);
-    market.push_back(s2);
+    market.push_back(appleStock);
+    market.push_back(spotStock);
 
     market.print();
     cout << endl << endl;
 
-//    p1.buyAll(market, 3);
-//    p1.print();
-//    p1.sellAll(market, 4);
-//
-//    p1.print();
 
     Portfolio pA(&market[0], 3);
-    pA.buyAll(market, 1);
-    pA.print();
-    pA.sellAll(market, 5);
-    pA.print();
-
+    Portfolio normal;
+    for (unsigned int i = 0; i < appleStock.data.size(); i++) {
+        if (shootWithProbability(.1)) {
+            cout << "action at timestep [" << i << "]" << endl;
+            normal.doAction(market, i);
+            pA.doAction(market, i);
+            pA.print();
+        }
+        if (i == appleStock.data.size()-1){
+            pA.finalizeActions(market, i);
+        }
+    }
 
     return 0;
 }

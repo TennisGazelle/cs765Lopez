@@ -15,6 +15,7 @@ public:
     string symbol;
     vector<float> data;
     void print() const;
+    void getValuesFromFile();
 };
 
 

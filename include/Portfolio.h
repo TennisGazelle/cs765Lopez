@@ -16,13 +16,20 @@ class Portfolio {
 public:
     Portfolio();
     Portfolio(Stock* pFocus, int pOffset);
+
     void buyAll(Market& market, unsigned int timestep);
     void sellAll(Market& market, unsigned int timestep);
+    void doAction(Market& market, unsigned int timestep);
+    void finalizeActions(Market& market, unsigned int timestep);
+
     void print() const;
+
+private:
     map<Stock*, float> assets;
     float money;
     Stock* focus;
     int offset;
+    enum {BUY, SELL} nextAction;
 };
 
 
