@@ -32,7 +32,7 @@ void Portfolio::buyAll(Market &market, unsigned int timestep) {
         }
 
         float numStocksToOwn = 100.0f / market[i].data[timeToBuy];
-        cout << "buying " << numStocksToOwn << " of " << market[i].symbol << endl;
+//        cout << "buying " << numStocksToOwn << " of " << market[i].symbol << endl;
         money -= numStocksToOwn * market[i].data[timeToBuy];
         assets[&market[i]] = numStocksToOwn;
     }
@@ -52,7 +52,7 @@ void Portfolio::sellAll(Market &market, unsigned int timestep) {
         // sell anything that I have for that price
         float numStocksOwned = assets[&market[i]];
         money += numStocksOwned * market[i].data[timeToSell];
-        cout << "selling " << numStocksOwned << " of " << market[i].symbol << " at price " << market[i].data[timeToSell] << endl;
+//        cout << "selling " << numStocksOwned << " of " << market[i].symbol << " at price " << market[i].data[timeToSell] << endl;
         assets[&market[i]] = 0;
     }
 }

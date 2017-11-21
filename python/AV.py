@@ -103,6 +103,16 @@ class AlphaVantage:
         }
 
         return requests.get(self.url, params=parameters).json()
+
+    def fetchStockInformationTimeSeries(self, symbol, function = AV_TIME_SERIES["INTRADAY"], interval = AV_TIME_INTERVALS["ONE_MIN"]):
+        info = self.fetchStockInformation(symbol, function, interval)
+        low = []
+        for k in info.keys():
+            if "Time Series" in k:
+                for timeslot in sorted(k.items()):
+                    low += float(timeslot[1]["3. low"])
+                break
+        return low
     
     def fetchStockTechnicalIndicator(self, symbol, function, interval = AV_TIME_INTERVALS["ONE_MIN"], time_period = 60, series_type = AV_SERIES_TYPES["open"]):
         parameters = {
@@ -128,6 +138,7 @@ class AlphaVantage:
         r = self.fetchStockInformation(symbol)
         timeToLookUp = r["Meta Data"]["3. Last Refreshed"]
         return float(r["Time Series (1min)"][timeToLookUp]["4. close"])
+
     def fetchStockPercentDifference(self, symbol):
         r = self.fetchStockInformation(symbol)
         timeToLookUp = r["Meta Data"]["3. Last Refreshed"]
@@ -138,28 +149,32 @@ class AlphaVantage:
 if __name__ == '__main__':
     av = AlphaVantage()
 
-    gra = Graph()
-    for stock in stock_names:
-        stock_values = av.fetchStockPercentDifference(stock)
-        stock_price = stock_values[1]
-        stock_percent = stock_values[2]
-        print ("stock {} has % diff of {}".format(stock, stock_percent))
-        
-        newStock = {
-            "name": stock,
-            "percentDiff": stock_percent,
-            "currentValue": stock_price
-        }
-        stocks += [newStock]
-    
-    edgeDiffThreshold = 1000
-    for s in stocks:
-        gra.newVertex(s.name, s.currentValue)
-    gra.draw()
+    # gra = Graph()
+    # for stock in stock_names:
+    #     stock_values = av.fetchStockPercentDifference(stock)
+    #     stock_price = stock_values[1]
+    #     stock_percent = stock_values[2]
+    #     print ("stock {} has % diff of {}".format(stock, stock_percent))
+    #
+    #     newStock = {
+    #         "name": stock,
+    #         "percentDiff": stock_percent,
+    #         "currentValue": stock_price
+    #     }
+    #     stocks += [newStock]
+    #
+    # edgeDiffThreshold = 1000
+    # for s in stocks:
+    #     gra.newVertex(s.name, s.currentValue)
+    # gra.draw()
+
+
     # for left in range(0, len(stocks)):
     #     for right in range (left, len(stocks)):
     #         distance = abs(stocks[left] - stocks[right])
 
-
+    stock = stock_names[0]
+    stock_values = av.fetchStockInformationTimeSeries(stock, function=AV_TIME_SERIES['WEEKLY'], interval=AV_TIME_INTERVALS['HOUR'])
+    print (stock_values)
 
 

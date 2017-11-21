@@ -21,33 +21,29 @@ int main(int argc, char *argv[]) {
     cout << "writing to file took " << timer.getElapsedTime() << " seconds." << endl;
 
     Market market;
-    Stock appleStock, spotStock;
-
-    appleStock.symbol = "AAPL";
-    appleStock.getValuesFromFile();
-
-    spotStock.symbol = "SPOT";
-    spotStock.getValuesFromFile();
+    Stock appleStock("AAPL"), spotStock("SPOT"), dellStock("DELL");
 
     market.push_back(appleStock);
     market.push_back(spotStock);
+    market.push_back(dellStock);
 
     market.print();
     cout << endl << endl;
 
-
-    Portfolio pA(&market[0], 3);
-    Portfolio normal;
-    for (unsigned int i = 0; i < appleStock.data.size(); i++) {
-        if (shootWithProbability(.1)) {
-            cout << "action at timestep [" << i << "]" << endl;
-            normal.doAction(market, i);
-            pA.doAction(market, i);
-            pA.print();
+//    Portfolio pA(&market[0], 3);
+    vector <Portfolio> normalPortfolios(10);
+    for (auto &portfolio : normalPortfolios) {
+        for (unsigned int i = 0; i < appleStock.data.size(); i++) {
+            if (shootWithProbability(.5)) {
+//                cout << "action at timestep [" << i << "]" << endl;
+                portfolio.doAction(market, i);
+//                portfolio.print();
+            }
+            if (i == appleStock.data.size()-1){
+                portfolio.finalizeActions(market, i);
+            }
         }
-        if (i == appleStock.data.size()-1){
-            pA.finalizeActions(market, i);
-        }
+        portfolio.print();
     }
 
     return 0;

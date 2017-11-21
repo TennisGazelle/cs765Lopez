@@ -12,6 +12,7 @@ using namespace std;
 
 class Stock {
 public:
+    Stock(const string& incomingSymbol);
     string symbol;
     vector<float> data;
     void print() const;

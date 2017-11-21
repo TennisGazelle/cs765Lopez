@@ -6,6 +6,10 @@
 #include <fstream>
 #include "Stock.h"
 
+Stock::Stock(const string &incomingSymbol) : symbol(incomingSymbol) {
+    getValuesFromFile();
+}
+
 void Stock::print() const {
     cout << symbol << ": ";
     for (float d : data) {
@@ -15,6 +19,11 @@ void Stock::print() const {
 }
 
 void Stock::getValuesFromFile() {
+    if (symbol.empty()) {
+        data.push_back(-1);
+        throw logic_error("Symbol name is empty");
+    }
+
     data.clear();
     data.reserve(100);
     // given your stock symbol
