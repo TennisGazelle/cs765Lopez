@@ -22,10 +22,12 @@ public:
     void doAction(Market& market, unsigned int timestep);
     void finalizeActions(Market& market, unsigned int timestep);
 
+    float getCorrelationBetween(Stock* left, Stock* right);
+
     void print() const;
 
 private:
-    map<Stock*, float> assets;
+    map<Stock*, pair<float, float>> assets;
     float money;
     Stock* focus;
     int offset;
