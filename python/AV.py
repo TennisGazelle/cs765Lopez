@@ -25,7 +25,7 @@ stock_names = [
     "NKE",
     "SSC",
     "BABA",
-    "LGF.A",
+    # "LGF.A",
     "PLNT",
     "COST",
     "INTC",
@@ -109,9 +109,11 @@ class AlphaVantage:
         low = []
         for k in info.keys():
             if "Time Series" in k:
-                for timeslot in sorted(k.items()):
-                    low += float(timeslot[1]["3. low"])
+                info = info[k]
                 break
+        for timeslot in sorted(info.items()):
+            low += [float(timeslot[1]["3. low"])]
+
         return low
     
     def fetchStockTechnicalIndicator(self, symbol, function, interval = AV_TIME_INTERVALS["ONE_MIN"], time_period = 60, series_type = AV_SERIES_TYPES["open"]):
@@ -173,8 +175,15 @@ if __name__ == '__main__':
     #     for right in range (left, len(stocks)):
     #         distance = abs(stocks[left] - stocks[right])
 
-    stock = stock_names[0]
-    stock_values = av.fetchStockInformationTimeSeries(stock, function=AV_TIME_SERIES['WEEKLY'], interval=AV_TIME_INTERVALS['HOUR'])
-    print (stock_values)
+    # stock = stock_names[0]
+    for stock in stock_names:
+        print ("compiling info for {}".format(stock))
+        stock_values = av.fetchStockInformationTimeSeries(stock, function=AV_TIME_SERIES['DAILY'], interval=AV_TIME_INTERVALS['HOUR'])
+        print ("writing info for {}".format(stock))
+        with open ("../in/{}.log".format(stock), "w+") as f:
+            for sv in stock_values:
+                f.write("{}\n".format(sv))
+
+#    print (stock_values)
 
 
