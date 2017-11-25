@@ -21,8 +21,9 @@ public:
     void sellAll(Market& market, unsigned int timestep);
     void doAction(Market& market, unsigned int timestep);
     void finalizeActions(Market& market, unsigned int timestep);
+    float getMoney() const;
 
-    float getCorrelationBetween(Stock* left, Stock* right);
+    double getCorrelationBetween(Stock* left, Stock* right);
 
     void print() const;
 

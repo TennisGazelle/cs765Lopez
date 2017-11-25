@@ -33,7 +33,7 @@ void Portfolio::buyAll(Market &market, unsigned int timestep) {
         }
 
         float numStocksToOwn = 100.0f / market[i].data[timeToBuy];
-        cout << "buying " << numStocksToOwn << " of " << market[i].symbol << " at price " << market[i].data[timeToBuy] << endl;
+//        cout << "buying " << numStocksToOwn << " of " << market[i].symbol << " at price " << market[i].data[timeToBuy] << endl;
         money -= numStocksToOwn * market[i].data[timeToBuy];
         assets[&market[i]].first = numStocksToOwn;
         assets[&market[i]].second -= numStocksToOwn * market[i].data[timeToBuy];
@@ -54,7 +54,7 @@ void Portfolio::sellAll(Market &market, unsigned int timestep) {
         // sell anything that I have for that price
         float numStocksOwned = assets[&market[i]].first;
         money += numStocksOwned * market[i].data[timeToSell];
-        cout << "selling " << numStocksOwned << " of " << market[i].symbol << " at price " << market[i].data[timeToSell] << endl;
+//        cout << "selling " << numStocksOwned << " of " << market[i].symbol << " at price " << market[i].data[timeToSell] << endl;
         assets[&market[i]].first = 0;
         assets[&market[i]].second += numStocksOwned * market[i].data[timeToSell];
     }
@@ -77,12 +77,12 @@ void Portfolio::finalizeActions(Market &market, unsigned int timestep) {
 
 void Portfolio::print() const {
     cout << "Portfolio [" << money << "," << offset << "]: " << endl;
-    for (auto instance : assets) {
-        cout << "--" << instance.first->symbol << " : number owned " << instance.second.first << ", profit made " << instance.second.second << endl;
-    }
+//    for (auto instance : assets) {
+//        cout << "--" << instance.first->symbol << " : number owned " << instance.second.first << ", profit made " << instance.second.second << endl;
+//    }
 }
 
-float Portfolio::getCorrelationBetween(Stock *left, Stock *right) {
+double Portfolio::getCorrelationBetween(Stock *left, Stock *right) {
     // have we ever seen these before?
     if (assets.find(left) == assets.end() || assets.find(right) == assets.end()) {
         // no correlation
@@ -90,9 +90,13 @@ float Portfolio::getCorrelationBetween(Stock *left, Stock *right) {
     }
 
     // start making the thing
-    float logReturnLeft = (assets[left].second);
-    float logReturnRight = (assets[right].second);
-    float e_ij = 2*(logReturnLeft + logReturnRight)/(abs(logReturnLeft) + abs(logReturnRight));
+    double logReturnLeft = (assets[left].second);
+    double logReturnRight = (assets[right].second);
+    double e_ij = 2*(logReturnLeft + logReturnRight)/(abs(logReturnLeft) + abs(logReturnRight));
 
     return e_ij-1;
+}
+
+float Portfolio::getMoney() const {
+    return money;
 }

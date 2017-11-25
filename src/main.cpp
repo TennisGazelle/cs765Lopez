@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Timer.h>
 #include <Portfolio.h>
+#include <digraph/digraph.hpp>
 
 #include "Logger.h"
 
@@ -19,7 +20,6 @@ const string STOCK_NAMES[] = {
         "NKE",
         "SSC",
         "BABA",
-        "LGF.A",
         "PLNT",
         "COST",
         "INTC",
@@ -46,7 +46,7 @@ const string STOCK_NAMES[] = {
         "M",
         "LMT",
         "GRUB",
-        "TVIAQ",
+//        "TVIAQ",
         "T",
         "BUD",
         "MMM",
@@ -56,6 +56,14 @@ const string STOCK_NAMES[] = {
 bool shootWithProbability(double prob) {
     double shot = double(rand())/double(RAND_MAX);
     return (shot <= prob);
+}
+
+double getSumOfCorrelationsBetweenPortfoliosAtIndex(int i, int j, vector<Stock>& market, vector<Portfolio>& portfolios) {
+    int sum = 0;
+    for (auto p : portfolios) {
+        sum += p.getCorrelationBetween(&market[i], &market[j]);
+    }
+    return sum;
 }
 
 int main(int argc, char *argv[]) {
@@ -69,7 +77,7 @@ int main(int argc, char *argv[]) {
     cout << "writing to file took " << timer.getElapsedTime() << " seconds." << endl;
 
     Market market;
-    for (auto sn : STOCK_NAMES) {
+    for (const auto &sn : STOCK_NAMES) {
         Stock stock(sn);
         market.push_back(stock);
     }
@@ -77,22 +85,61 @@ int main(int argc, char *argv[]) {
     market.print();
     cout << endl << endl;
 
-    Portfolio pA;
-    for (unsigned int i = 0; i < market[0].data.size(); i++) {
-        cout << "i: " << i << endl;
-        if (shootWithProbability(.5)) {
-            pA.doAction(market, i);
-            pA.print();
+    // declare the indexes at which to
+    vector<bool> actionIndexes(market[0].data.size());
+    for (unsigned int i = 0; i < actionIndexes.size(); i++){
+        actionIndexes[i] = shootWithProbability(.05);
+        cout << (actionIndexes[i]);
+    }
+    cout << endl;
 
-            if (i == market[0].data.size()-1) {
-                pA.finalizeActions(market, i);
+    vector<Portfolio> portfolios;
+    unsigned int offset = 1;
+    // put in a focus for each one
+    for (unsigned int i = 0; i < market.size(); i++) {
+        portfolios.emplace_back(Portfolio(&market[i], offset));
+
+        // for each data point
+        for (unsigned int data_index = 0; data_index < market[0].data.size(); data_index++) {
+            if (actionIndexes[data_index]) {
+                portfolios[i].doAction(market, data_index);
+                if (i == actionIndexes.size()-1) {
+                    portfolios[i].finalizeActions(market, data_index);
+                }
             }
         }
+
+        cout << "Created Portfolio [" << i << "," + market[i].symbol + "] - Total Return with offset " << offset << ": " << portfolios[i].getMoney() << endl;
     }
 
-    // get the relation between apple and spot
-    cout << "Correlation between spot and dell: " << pA.getCorrelationBetween(&market[1], &market[2]);
 
+    ofstream fout("../out/correlation.csv");
+    for (unsigned int i = 0; i < market.size(); i++) {
+        cout << "," << market[i].symbol;
+        fout << "," << market[i].symbol;
+    }
+    cout << endl;
+    fout << endl;
+    for (unsigned int i = 0; i < market.size(); i++) {
+        cout << market[i].symbol;
+        fout << market[i].symbol;
+        for (unsigned int j = 0; j < market.size(); j++) {
+            cout << ",";
+            fout << ",";
+            double c = getSumOfCorrelationsBetweenPortfoliosAtIndex(i, j, market, portfolios);
+            cout << c;
+            fout << c;
+        }
+        cout << endl;
+        fout << endl;
+    }
+    fout.close();
+
+//    for (const auto& node : graph.nodes()) {
+//        for (const auto& edge : graph.connections(node)) {
+//            cout << node << " - " << edge.first << " with correlation: " << float(edge.second)/10000.0f << endl;
+//        }
+//    }
 
 //    vector <Portfolio> normalPortfolios(10);
 //    for (auto &portfolio : normalPortfolios) {
