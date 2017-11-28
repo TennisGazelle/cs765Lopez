@@ -1,419 +1,12 @@
 #include <iostream>
-#include <Timer.h>
 #include <Portfolio.h>
-#include <digraph/digraph.hpp>
 #include <cmath>
+#include <algorithm>
 
 #include "Logger.h"
+#include "config.h"
 
 using namespace std;
-
-const string STOCK_NAMES[] = {
-        "A",
-        "AAL",
-        "AAP",
-        "AAPL",
-        "ABBV",
-        "ABC",
-        "ABT",
-        "ACN",
-        "ADBE",
-        "ADI",
-        "ADM",
-        "ADP",
-        "ADS",
-        "ADSK",
-        "AEE",
-        "AEP",
-        "AES",
-        "AET",
-        "AFL",
-        "AGN",
-        "AIG",
-        "AIV",
-        "AIZ",
-        "AJG",
-        "AKAM",
-        "ALB",
-        "ALK",
-        "ALL",
-        "ALLE",
-        "ALXN",
-        "AMAT",
-        "AME",
-        "AMG",
-        "AMGN",
-        "AMP",
-        "AMT",
-        "AMZN",
-        "AN",
-        "ANTM",
-        "AON",
-        "APA",
-        "APC",
-        "APD",
-        "APH",
-        "ARNC",
-        "ATVI",
-        "AVB",
-        "AVGO",
-        "AVY",
-        "AWK",
-        "AXP",
-        "AYI",
-        "AZO",
-        "BA",
-        "BAC",
-        "BAX",
-        "BBBY",
-        "BBT",
-        "BBY",
-        "BCR",
-        "BDX",
-        "BEN",
-        "BF.B",
-        "BIIB",
-        "BK",
-        "BLK",
-        "BLL",
-        "BMY",
-        "BRK.B",
-        "BSX",
-        "BWA",
-        "BXP",
-        "C",
-        "CA",
-        "CHRW",
-        "CHTR",
-        "CI",
-        "CINF",
-        "CL",
-        "CLX",
-        "CMA",
-        "CMCSA",
-        "CME",
-        "CMG",
-        "CMI",
-        "CMS",
-        "CNC",
-        "CNP",
-        "COF",
-        "COG",
-        "COH",
-        "COL",
-        "COO",
-        "COP",
-        "COST",
-        "COTY",
-        "CPB",
-        "CRM",
-        "CSCO",
-        "CSRA",
-        "CSX",
-        "CTAS",
-        "CTL",
-        "CTSH",
-        "CTXS",
-        "CVS",
-        "CVX",
-        "CXO",
-        "D",
-        "DAL",
-        "DE",
-        "DFS",
-        "DG",
-        "DGX",
-        "DHI",
-        "DHR",
-        "DIS",
-        "DISCA",
-        "DISCK",
-        "DLPH",
-        "DLR",
-        "DLTR",
-        "DNB",
-        "DOV",
-        "DPS",
-        "DRI",
-        "DTE",
-        "DUK",
-        "DVA",
-        "DVN",
-        "EA",
-        "EBAY",
-        "ECL",
-        "ED",
-        "EFX",
-        "EIX",
-        "EL",
-        "EMN",
-        "EMR",
-        "EOG",
-        "EQIX",
-        "EQR",
-        "EQT",
-        "ES",
-        "ESRX",
-        "ESS",
-        "ETFC",
-        "ETN",
-        "ETR",
-        "EVHC",
-        "GIS",
-        "GLW",
-        "GM",
-        "GOOG",
-        "GOOGL",
-        "GPC",
-        "GPN",
-        "GPS",
-        "GRMN",
-        "GS",
-        "GT",
-        "GWW",
-        "HAL",
-        "HAS",
-        "HBAN",
-        "HBI",
-        "HCA",
-        "HCN",
-        "HCP",
-        "HD",
-        "HES",
-        "HIG",
-        "HOG",
-        "HOLX",
-        "HON",
-        "HP",
-        "HPE",
-        "HPQ",
-        "HRB",
-        "HRL",
-        "HRS",
-        "HSIC",
-        "HST",
-        "HSY",
-        "HUM",
-        "IBM",
-        "ICE",
-        "IDXX",
-        "IFF",
-        "ILMN",
-        "INCY",
-        "INTC",
-        "INTU",
-//        "IP",
-//        "IPG",
-//        "IR",
-//        "IRM",
-//        "ISRG",
-//        "ITW",
-//        "IVZ",
-//        "JBHT",
-//        "JCI",
-//        "JEC",
-//        "JNJ",
-//        "JNPR",
-//        "JPM",
-//        "JWN",
-//        "K",
-//        "KEY",
-//        "KHC",
-//        "KIM",
-//        "KLAC",
-//        "KMB",
-//        "KMI",
-//        "KMX",
-//        "KO",
-//        "KORS",
-//        "KR",
-//        "KSS",
-//        "KSU",
-//        "L",
-//        "LB",
-//        "LEG",
-//        "LEN",
-//        "LH",
-//        "LKQ",
-//        "MDLZ",
-//        "MDT",
-//        "MET",
-//        "MHK",
-//        "MKC",
-//        "MLM",
-//        "MMC",
-//        "MMM",
-//        "MNK",
-//        "MNST",
-//        "MO",
-//        "MON",
-//        "MOS",
-//        "MPC",
-//        "MRK",
-//        "MRO",
-//        "MS",
-//        "MSFT",
-//        "MSI",
-//        "MTB",
-//        "MTD",
-//        "MU",
-//        "MUR",
-//        "MYL",
-//        "NAVI",
-//        "NBL",
-//        "NDAQ",
-//        "NEE",
-//        "NEM",
-//        "NFLX",
-//        "NFX",
-//        "NI",
-//        "NKE",
-//        "NLSN",
-//        "NOC",
-//        "NOV",
-//        "NRG",
-//        "NSC",
-//        "NTAP",
-//        "NTRS",
-//        "NUE",
-//        "NVDA",
-//        "NWL",
-//        "NWS",
-//        "NWSA",
-//        "O",
-//        "OKE",
-//        "OMC",
-//        "ORCL",
-//        "ORLY",
-//        "OXY",
-//        "PAYX",
-//        "PBCT",
-//        "PCAR",
-//        "PCG",
-//        "PCLN",
-//        "PDCO",
-//        "PEG",
-//        "PEP",
-//        "PFE",
-//        "PFG",
-//        "PG",
-//        "PGR",
-//        "PH",
-//        "PHM",
-//        "PKI",
-//        "PLD",
-//        "PM",
-//        "PNC",
-//        "PNR",
-//        "PNW",
-//        "PPG",
-//        "PPL",
-//        "PRGO",
-//        "PRU",
-//        "PSA",
-//        "RTN",
-//        "SBUX",
-//        "SCG",
-//        "SCHW",
-//        "SEE",
-//        "SHW",
-//        "SIG",
-//        "SJM",
-//        "SLB",
-//        "SLG",
-//        "SNA",
-//        "SNI",
-//        "SO",
-//        "SPG",
-//        "SPGI",
-//        "SRCL",
-//        "SRE",
-//        "STI",
-//        "STT",
-//        "STX",
-//        "STZ",
-//        "SWK",
-//        "SWKS",
-//        "SWN",
-//        "SYF",
-//        "SYK",
-//        "SYMC",
-//        "SYY",
-//        "T",
-//        "TAP",
-//        "TDC",
-//        "TDG",
-//        "TEL",
-//        "TGNA",
-//        "TGT",
-//        "TIF",
-//        "TJX",
-//        "TMK",
-//        "TMO",
-//        "TRIP",
-//        "TROW",
-//        "TRV",
-//        "TSCO",
-//        "TSN",
-//        "TSS",
-//        "TWX",
-//        "TXN",
-//        "TXT",
-//        "UA",
-//        "UAA",
-//        "UAL",
-//        "UDR",
-//        "UHS",
-//        "ULTA",
-//        "UNH",
-//        "UNM",
-//        "UNP",
-//        "UPS",
-//        "URBN",
-//        "URI",
-//        "USB",
-//        "UTX",
-//        "V",
-//        "VAR",
-//        "VFC",
-//        "VIAB",
-//        "VLO",
-//        "VMC",
-//        "VNO",
-//        "VRSK",
-//        "VRSN",
-//        "VRTX",
-//        "VTR",
-//        "VZ",
-//        "WAT",
-//        "WBA",
-//        "WDC",
-//        "WEC",
-//        "WFC",
-//        "WHR",
-//        "WLTW",
-//        "WM",
-//        "WMB",
-//        "WMT",
-//        "WRK",
-//        "WU",
-//        "WY",
-//        "WYN",
-//        "WYNN",
-//        "XEC",
-//        "XEL",
-//        "XL",
-//        "XLNX",
-//        "XOM",
-//        "XRAY",
-//        "XRX",
-//        "XYL",
-//        "YUM",
-//        "ZBH",
-//        "ZION",
-//        "ZTS"
-
-};
 
 bool shootWithProbability(double prob) {
     double shot = double(rand())/double(RAND_MAX);
@@ -478,7 +71,7 @@ void outputCorrelationMatrixToFile(const string& filename, const vector< vector<
     cout << count_edges/2 << " total edges." << endl;
 }
 
-void varyThreshold(const vector< vector<double> >& matrix) {
+vector<unsigned int> varyThreshold(const vector< vector<double> >& matrix) {
     vector<double> values;
     values.reserve(matrix.size()*matrix.size());
     for (const auto& row : matrix) {
@@ -488,39 +81,20 @@ void varyThreshold(const vector< vector<double> >& matrix) {
     }
     sort(values.begin(), values.end());
 
-    int count = 0;
-    for (float t = 0.0; t < 1.0; t += 0.01f) {
+    vector<unsigned int> numValuesLowerThan;
+    numValuesLowerThan.reserve(100);
+    unsigned int count = 0;
+    for (float t = 0.0; t < 3.0; t += 0.01f) {
         while (values[count] < t) {
             count ++;
         }
         cout << "num of values lower than " << t << " : " << count << "[" << double(count)/double(values.size()) << "%]" << endl;
+        numValuesLowerThan.push_back(count);
     }
+    return numValuesLowerThan;
 }
 
-int main(int argc, char *argv[]) {
-//    srand((unsigned int)time(nullptr));
-    srand(1);
-
-    Market market;
-    for (const auto &sn : STOCK_NAMES) {
-        Stock stock(sn);
-        market.push_back(stock);
-    }
-
-    market.print();
-    cout << endl << endl;
-
-    // declare the indexes at which to
-    unsigned int offset = 3;
-    vector<bool> actionIndexes(market[0].data.size());
-    for (unsigned int i = 0; i < actionIndexes.size(); i++){
-        actionIndexes[i] = shootWithProbability(.24);
-        if (i + offset >= actionIndexes.size())
-            actionIndexes[i] = false;
-        cout << i << ": " << (actionIndexes[i]) << endl;
-    }
-    cout << endl;
-
+vector<Portfolio> initPortfolios(Market& market, unsigned int offset, vector<bool> actionIndexes) {
     vector<Portfolio> portfolios;
     // put in a focus for each one
     for (unsigned int i = 0; i < market.size(); i++) {
@@ -538,15 +112,38 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-
         cout << "Created Portfolio [" << i << "," + market[i].symbol + "] - Total Return with offset " << offset << ": " << portfolios[i].getMoney() << endl;
     }
 
-    vector< vector<double> > correlationMatrix = getCorrelationMatrix(market, portfolios);
+    return portfolios;
+}
+
+vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
+    vector<bool> indeces(size);
+    for (unsigned int i = 0; i < indeces.size(); i++) {
+        indeces[i] = shootWithProbability(.24);
+        if (i+offset >= indeces.size()) {
+            indeces[i] = false;
+        }
+    }
+    return indeces;
+}
+
+int main(int argc, char *argv[]) {
+//    srand((unsigned int)time(nullptr));
+    srand(2);
+
+    Market market;
+    market.init(STOCK_NAMES);
+
+    // declare the indexes at which to
+    unsigned int offset = 3;
+    vector<bool> actionIndexes                  = defineActionTimes(market[0].data.size(), offset);
+    vector<Portfolio> portfolios                = initPortfolios(market, offset, actionIndexes);
+    vector< vector<double> > correlationMatrix  = getCorrelationMatrix(market, portfolios);
 
     outputCorrelationMatrixToFile("../out/correlation.csv", correlationMatrix, market);
-
-    varyThreshold(correlationMatrix);
+    vector<unsigned int> countDistribution      = varyThreshold(correlationMatrix);
 
     return 0;
 }
