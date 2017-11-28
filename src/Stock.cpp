@@ -25,7 +25,7 @@ void Stock::getValuesFromFile() {
     }
 
     data.clear();
-    data.reserve(100);
+    data.reserve(150);
     // given your stock symbol
     string filename = "../in/" + symbol + ".log";
     ifstream fin;
@@ -35,6 +35,8 @@ void Stock::getValuesFromFile() {
         float temp;
         fin >> temp;
         data.push_back(temp);
+        if (data.size() > 150)
+            break;
     }
     data.erase(data.end()-1);
     fin.close();

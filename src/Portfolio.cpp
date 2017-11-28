@@ -34,9 +34,10 @@ void Portfolio::buyAll(Market &market, unsigned int timestep) {
 
         float numStocksToOwn = 100.0f / market[i].data[timeToBuy];
 //        cout << "buying " << numStocksToOwn << " of " << market[i].symbol << " at price " << market[i].data[timeToBuy] << endl;
-        money -= numStocksToOwn * market[i].data[timeToBuy];
+        float equity = numStocksToOwn * market[i].data[timeToBuy];
+        money -= equity;
         assets[&market[i]].first = numStocksToOwn;
-        assets[&market[i]].second -= numStocksToOwn * market[i].data[timeToBuy];
+        assets[&market[i]].second -= equity;
     }
 }
 
@@ -53,10 +54,22 @@ void Portfolio::sellAll(Market &market, unsigned int timestep) {
         }
         // sell anything that I have for that price
         float numStocksOwned = assets[&market[i]].first;
-        money += numStocksOwned * market[i].data[timeToSell];
+        float profit = numStocksOwned * market[i].data[timeToSell];
+        money += profit;
 //        cout << "selling " << numStocksOwned << " of " << market[i].symbol << " at price " << market[i].data[timeToSell] << endl;
         assets[&market[i]].first = 0;
-        assets[&market[i]].second += numStocksOwned * market[i].data[timeToSell];
+        assets[&market[i]].second += profit;
+    }
+}
+
+void Portfolio::sellAllNow(Market &market, unsigned int timestep) {
+    // for everything that I have
+    for (unsigned int i = 0; i < market.size(); i++) {
+        float numStocksOwned = assets[&market[i]].first;
+        float profit = numStocksOwned * market[i].data[timestep];
+        assets[&market[i]].first = 0;
+        assets[&market[i]].second += profit;
+        money += profit;
     }
 }
 
@@ -71,8 +84,9 @@ void Portfolio::doAction(Market &market, unsigned int timestep) {
 }
 
 void Portfolio::finalizeActions(Market &market, unsigned int timestep) {
-    if (nextAction == SELL)
-        doAction(market, timestep);
+//    if (nextAction == SELL)
+//        doAction(market, timestep);
+    sellAllNow(market, timestep);
 }
 
 void Portfolio::print() const {
@@ -89,14 +103,25 @@ double Portfolio::getCorrelationBetween(Stock *left, Stock *right) {
         return 0.0;
     }
 
+    if (left == right) {
+        return 1;
+    }
+
+
     // start making the thing
     double logReturnLeft = (assets[left].second);
     double logReturnRight = (assets[right].second);
+    // DEBUGGING REASONS
+    return logReturnLeft / (logReturnLeft + logReturnRight);
     double e_ij = 2*(logReturnLeft + logReturnRight)/(abs(logReturnLeft) + abs(logReturnRight));
 
     return e_ij-1;
 }
 
-float Portfolio::getMoney() const {
+double Portfolio::getMoney() const {
     return money;
+}
+
+Stock* Portfolio::getFocus() const {
+    return focus;
 }

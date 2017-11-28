@@ -59,22 +59,85 @@ bool shootWithProbability(double prob) {
 }
 
 double getSumOfCorrelationsBetweenPortfoliosAtIndex(int i, int j, vector<Stock>& market, vector<Portfolio>& portfolios) {
-    int sum = 0;
-    for (auto p : portfolios) {
+    double sum = 0.0;
+    for (auto& p : portfolios) {
         sum += p.getCorrelationBetween(&market[i], &market[j]);
+        if (isnan(sum)) {
+            cout << endl;
+            cout << i << "," << j << ": " << p.getFocus()->symbol << " ";
+            p.print();
+        }
     }
-    return sum;
+    return sum/double(portfolios.size());
+}
+
+vector< vector<double> > getCorrelationMatrix(Market &m, vector<Portfolio>& pfs) {
+    vector< vector<double> > correlation;
+    correlation.resize(m.size());
+    for (auto& row : correlation) {
+        row.resize(m.size());
+    }
+
+    for (unsigned int i = 0; i < m.size(); i++) {
+        for (unsigned int j = 0; j < m.size(); j++) {
+            correlation[i][j] = getSumOfCorrelationsBetweenPortfoliosAtIndex(i, j, m, pfs);
+        }
+    }
+
+    return correlation;
+}
+
+void outputCorrelationMatrixToFile(const string& filename, const vector< vector<double> >& matrix, Market& market) {
+    ofstream fout("../out/correlation.csv");
+    for (unsigned int i = 0; i < market.size(); i++) {
+        cout << "," << market[i].symbol;
+        fout << "," << market[i].symbol;
+    }
+    cout << endl;
+    fout << endl;
+    unsigned int count_edges = 0;
+    for (unsigned int i = 0; i < market.size(); i++) {
+        cout << market[i].symbol;
+        fout << market[i].symbol;
+        for (unsigned int j = 0; j < market.size(); j++) {
+            cout << ",";
+            fout << ",";
+            double c = matrix[i][j];
+            if (i != j && (c > 0.52 || c < -0.52)) {
+                count_edges++;
+                cout << c;
+                fout << c;
+            }
+        }
+        cout << endl;
+        fout << endl;
+    }
+    fout.close();
+    cout << count_edges/2 << " total edges." << endl;
+}
+
+void varyThreshold(const vector< vector<double> >& matrix) {
+    vector<double> values;
+    values.reserve(matrix.size()*matrix.size());
+    for (const auto& row : matrix) {
+        for (const auto& col : row) {
+            values.push_back(abs(col));
+        }
+    }
+    sort(values.begin(), values.end());
+
+    int count = 0;
+    for (float t = 0.0; t < 1.0; t += 0.01f) {
+        while (values[count] < t) {
+            count ++;
+        }
+        cout << "num of values lower than " << t << " : " << count << "[" << double(count)/double(values.size()) << "%]" << endl;
+    }
 }
 
 int main(int argc, char *argv[]) {
 //    srand((unsigned int)time(nullptr));
     srand(1);
-    Timer timer;
-    timer.start();
-    Logger logger;
-    logger.log("hello world");
-    timer.stop();
-    cout << "writing to file took " << timer.getElapsedTime() << " seconds." << endl;
 
     Market market;
     for (const auto &sn : STOCK_NAMES) {
@@ -86,15 +149,17 @@ int main(int argc, char *argv[]) {
     cout << endl << endl;
 
     // declare the indexes at which to
+    unsigned int offset = 3;
     vector<bool> actionIndexes(market[0].data.size());
     for (unsigned int i = 0; i < actionIndexes.size(); i++){
-        actionIndexes[i] = shootWithProbability(.05);
-        cout << (actionIndexes[i]);
+        actionIndexes[i] = shootWithProbability(.24);
+        if (i + offset >= actionIndexes.size())
+            actionIndexes[i] = false;
+        cout << i << ": " << (actionIndexes[i]) << endl;
     }
     cout << endl;
 
     vector<Portfolio> portfolios;
-    unsigned int offset = 1;
     // put in a focus for each one
     for (unsigned int i = 0; i < market.size(); i++) {
         portfolios.emplace_back(Portfolio(&market[i], offset));
@@ -106,55 +171,20 @@ int main(int argc, char *argv[]) {
                 if (i == actionIndexes.size()-1) {
                     portfolios[i].finalizeActions(market, data_index);
                 }
+                if (isnan(portfolios[i].getMoney())) {
+                    cout << "Portfolio [" << i << "," << market[i].symbol << "] became nan with action at timestep: " << data_index << endl;
+                }
             }
         }
 
         cout << "Created Portfolio [" << i << "," + market[i].symbol + "] - Total Return with offset " << offset << ": " << portfolios[i].getMoney() << endl;
     }
 
+    vector< vector<double> > correlationMatrix = getCorrelationMatrix(market, portfolios);
 
-    ofstream fout("../out/correlation.csv");
-    for (unsigned int i = 0; i < market.size(); i++) {
-        cout << "," << market[i].symbol;
-        fout << "," << market[i].symbol;
-    }
-    cout << endl;
-    fout << endl;
-    for (unsigned int i = 0; i < market.size(); i++) {
-        cout << market[i].symbol;
-        fout << market[i].symbol;
-        for (unsigned int j = 0; j < market.size(); j++) {
-            cout << ",";
-            fout << ",";
-            double c = getSumOfCorrelationsBetweenPortfoliosAtIndex(i, j, market, portfolios);
-            cout << c;
-            fout << c;
-        }
-        cout << endl;
-        fout << endl;
-    }
-    fout.close();
+    outputCorrelationMatrixToFile("../out/correlation.csv", correlationMatrix, market);
 
-//    for (const auto& node : graph.nodes()) {
-//        for (const auto& edge : graph.connections(node)) {
-//            cout << node << " - " << edge.first << " with correlation: " << float(edge.second)/10000.0f << endl;
-//        }
-//    }
-
-//    vector <Portfolio> normalPortfolios(10);
-//    for (auto &portfolio : normalPortfolios) {
-//        for (unsigned int i = 0; i < appleStock.data.size(); i++) {
-//            if (shootWithProbability(.5)) {
-////                cout << "action at timestep [" << i << "]" << endl;
-//                portfolio.doAction(market, i);
-////                portfolio.print();
-//            }
-//            if (i == appleStock.data.size()-1){
-//                portfolio.finalizeActions(market, i);
-//            }
-//        }
-//        portfolio.print();
-//    }
+    varyThreshold(correlationMatrix);
 
     return 0;
 }

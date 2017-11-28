@@ -19,9 +19,11 @@ public:
 
     void buyAll(Market& market, unsigned int timestep);
     void sellAll(Market& market, unsigned int timestep);
+    void sellAllNow(Market& market, unsigned int timestep);
     void doAction(Market& market, unsigned int timestep);
     void finalizeActions(Market& market, unsigned int timestep);
-    float getMoney() const;
+    double getMoney() const;
+    Stock* getFocus() const;
 
     double getCorrelationBetween(Stock* left, Stock* right);
 
@@ -29,7 +31,7 @@ public:
 
 private:
     map<Stock*, pair<float, float>> assets;
-    float money;
+    double money;
     Stock* focus;
     int offset;
     enum {BUY, SELL} nextAction;
