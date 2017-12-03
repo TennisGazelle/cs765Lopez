@@ -103,18 +103,23 @@ double Portfolio::getCorrelationBetween(Stock *left, Stock *right) {
         return 0.0;
     }
 
-    if (left == right) {
-        return 1;
+    // avoid self loops and div/0 errors
+    if (assets[left].second == assets[right].second) {
+        return 0.0;
     }
 
+    // if abs(left) > abs(right), swap them
+    if (abs(assets[left].second) > abs(assets[right].second)) {
+        swap(left, right);
+    }
 
     // start making the thing
     double logReturnLeft = (assets[left].second);
     double logReturnRight = (assets[right].second);
     // DEBUGGING REASONS
-    return logReturnLeft / (logReturnLeft + logReturnRight);
-    double e_ij = 2*(logReturnLeft + logReturnRight)/(abs(logReturnLeft) + abs(logReturnRight));
+    return logReturnLeft/logReturnRight;
 
+    double e_ij = 2*(logReturnLeft + logReturnRight)/(abs(logReturnLeft) + abs(logReturnRight));
     return e_ij-1;
 }
 

@@ -9,6 +9,7 @@
 #include <vector>
 using namespace std;
 
+const unsigned int MAX_OFFSET = 50;
 const vector<string> STOCK_NAMES = {
         "A",
         "AAL",

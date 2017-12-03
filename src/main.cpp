@@ -42,8 +42,8 @@ vector< vector<double> > getCorrelationMatrix(Market &m, vector<Portfolio>& pfs)
     return correlation;
 }
 
-void outputCorrelationMatrixToFile(const string& filename, const vector< vector<double> >& matrix, Market& market) {
-    ofstream fout("../out/correlation.csv");
+void outputCorrelationMatrixToFile(const string& filename, const vector< vector<double> >& matrix, Market& market, double threshold) {
+    ofstream fout(filename);
     for (unsigned int i = 0; i < market.size(); i++) {
         cout << "," << market[i].symbol;
         fout << "," << market[i].symbol;
@@ -58,7 +58,7 @@ void outputCorrelationMatrixToFile(const string& filename, const vector< vector<
             cout << ",";
             fout << ",";
             double c = matrix[i][j];
-            if (i != j && (c > 0.52 || c < -0.52)) {
+            if (i != j && (c > threshold || c < -threshold)) {
                 count_edges++;
                 cout << c;
                 fout << c;
@@ -85,10 +85,10 @@ vector<unsigned int> varyThreshold(const vector< vector<double> >& matrix) {
     numValuesLowerThan.reserve(100);
     unsigned int count = 0;
     for (float t = 0.0; t < 3.0; t += 0.01f) {
-        while (values[count] < t) {
+        while (count < values.size() && values[count] < t) {
             count ++;
         }
-        cout << "num of values lower than " << t << " : " << count << "[" << double(count)/double(values.size()) << "%]" << endl;
+//        cout << "num of values lower than " << t << " : " << count << "[" << double(count)/double(values.size()) << "%]" << endl;
         numValuesLowerThan.push_back(count);
     }
     return numValuesLowerThan;
@@ -112,7 +112,7 @@ vector<Portfolio> initPortfolios(Market& market, unsigned int offset, vector<boo
                 }
             }
         }
-        cout << "Created Portfolio [" << i << "," + market[i].symbol + "] - Total Return with offset " << offset << ": " << portfolios[i].getMoney() << endl;
+//        cout << "Created Portfolio [" << i << "," + market[i].symbol + "] - Total Return with offset " << offset << ": " << portfolios[i].getMoney() << endl;
     }
 
     return portfolios;
@@ -135,15 +135,27 @@ int main(int argc, char *argv[]) {
 
     Market market;
     market.init(STOCK_NAMES);
+    vector< vector<unsigned int> > countMap(MAX_OFFSET);
 
     // declare the indexes at which to
-    unsigned int offset = 3;
-    vector<bool> actionIndexes                  = defineActionTimes(market[0].data.size(), offset);
-    vector<Portfolio> portfolios                = initPortfolios(market, offset, actionIndexes);
-    vector< vector<double> > correlationMatrix  = getCorrelationMatrix(market, portfolios);
+    for (unsigned int offset = 1; offset < MAX_OFFSET; offset++) {
+        cout << "working on offset " << offset << endl;
+        vector<bool> actionIndexes                  = defineActionTimes(market[0].data.size(), offset);
+        vector<Portfolio> portfolios                = initPortfolios(market, offset, actionIndexes);
+        vector< vector<double> > correlationMatrix  = getCorrelationMatrix(market, portfolios);
 
-    outputCorrelationMatrixToFile("../out/correlation.csv", correlationMatrix, market);
-    vector<unsigned int> countDistribution      = varyThreshold(correlationMatrix);
+        cout << "outputting..." << endl;
+        outputCorrelationMatrixToFile("../out/correlation" + to_string(offset) + ".csv", correlationMatrix, market, 0.0);
+        countMap[offset-1] = varyThreshold(correlationMatrix);
+    }
+
+    for (unsigned int r = 0; r < MAX_OFFSET-1; r++) {
+        cout << r+1 << ": ";
+        for (unsigned int c = 0; c < countMap[r].size(); c++) {
+            cout << countMap[r][c] << ", ";
+        }
+        cout << endl;
+    }
 
     return 0;
 }
