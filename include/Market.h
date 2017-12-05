@@ -10,7 +10,7 @@
 
 class Market : public vector<Stock> {
 public:
-    void init(const vector<string> names);
+    void init(const vector<string>& names);
     void print() const;
 };
 

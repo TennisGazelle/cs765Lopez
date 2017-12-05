@@ -5,7 +5,7 @@
 #include <iostream>
 #include "Market.h"
 
-void Market::init(const vector<string> names) {
+void Market::init(const vector<string>& names) {
     for (const auto& sn : names) {
         emplace_back(Stock(sn));
     }

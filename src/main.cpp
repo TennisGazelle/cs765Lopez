@@ -1,7 +1,8 @@
 #include <iostream>
 #include <Portfolio.h>
 #include <cmath>
-#include <algorithm>
+
+#include <igraph/igraph.h>
 
 #include "Logger.h"
 #include "config.h"
@@ -23,7 +24,7 @@ double getSumOfCorrelationsBetweenPortfoliosAtIndex(int i, int j, vector<Stock>&
             p.print();
         }
     }
-    return sum/double(portfolios.size());
+    return log(sum/double(portfolios.size()));
 }
 
 vector< vector<double> > getCorrelationMatrix(Market &m, vector<Portfolio>& pfs) {
@@ -84,7 +85,7 @@ vector<unsigned int> varyThreshold(const vector< vector<double> >& matrix) {
     vector<unsigned int> numValuesLowerThan;
     numValuesLowerThan.reserve(100);
     unsigned int count = 0;
-    for (float t = 0.0; t < 3.0; t += 0.01f) {
+    for (float t = 0.0; t < 3.0; t += 0.01) {
         while (count < values.size() && values[count] < t) {
             count ++;
         }
@@ -129,6 +130,23 @@ vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
     return indeces;
 }
 
+void makeGraph(const vector< vector<double> >& matrix) {
+    igraph_t g;
+    igraph_scg_matrix_t mat;
+
+//    igraph_matrix_init(&matrix[0][0], matrix.size(), matrix.size());
+
+    // matrix should be a square matrix
+    for (unsigned int r = 0; r < matrix.size(); r++) {
+        for (unsigned int c = 0; c < r; c++) {
+            MATRIX(mat, r, c) = matrix[r][c];
+        }
+    }
+
+
+
+}
+
 int main(int argc, char *argv[]) {
 //    srand((unsigned int)time(nullptr));
     srand(2);
@@ -138,11 +156,13 @@ int main(int argc, char *argv[]) {
     vector< vector<unsigned int> > countMap(MAX_OFFSET);
 
     // declare the indexes at which to
-    for (unsigned int offset = 1; offset < MAX_OFFSET; offset++) {
+    for (unsigned int offset = 1; offset < 2; offset++) {
         cout << "working on offset " << offset << endl;
         vector<bool> actionIndexes                  = defineActionTimes(market[0].data.size(), offset);
         vector<Portfolio> portfolios                = initPortfolios(market, offset, actionIndexes);
         vector< vector<double> > correlationMatrix  = getCorrelationMatrix(market, portfolios);
+
+        makeGraph(correlationMatrix);
 
         cout << "outputting..." << endl;
         outputCorrelationMatrixToFile("../out/correlation" + to_string(offset) + ".csv", correlationMatrix, market, 0.0);
