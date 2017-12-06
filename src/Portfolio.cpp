@@ -105,12 +105,16 @@ double Portfolio::getCorrelationBetween(Stock *left, Stock *right) {
 
     // avoid self loops and div/0 errors
     if (assets[left].second == assets[right].second) {
-        return 0.0;
+        return 1.0;
     }
 
     // if abs(left) > abs(right), swap them
     if (abs(assets[left].second) > abs(assets[right].second)) {
         swap(left, right);
+    }
+
+    if (assets[right].second == 0.0) {
+        return 1.0;
     }
 
     // start making the thing

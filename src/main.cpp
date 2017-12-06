@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include <igraph/igraph.h>
+#include <teexgraph/Graph.h>
 
 #include "Logger.h"
 #include "config.h"
@@ -24,7 +25,7 @@ double getSumOfCorrelationsBetweenPortfoliosAtIndex(int i, int j, vector<Stock>&
             p.print();
         }
     }
-    return log(sum/double(portfolios.size()));
+    return (sum/double(portfolios.size()));
 }
 
 vector< vector<double> > getCorrelationMatrix(Market &m, vector<Portfolio>& pfs) {
@@ -72,7 +73,19 @@ void outputCorrelationMatrixToFile(const string& filename, const vector< vector<
     cout << count_edges/2 << " total edges." << endl;
 }
 
-vector<unsigned int> varyThreshold(const vector< vector<double> >& matrix) {
+void outputEdgeListToFile(const string& filename, const vector< vector<double> >& matrix, Market& market, double threshold) {
+    ofstream fout(filename);
+    for (unsigned int r = 0; r < matrix.size(); r++) {
+        for (unsigned int c = 0; c < r; c++) {
+            if (matrix[r][c] > threshold || matrix[r][c] < -threshold) {
+                fout << market[r].symbol << " " << market[c].symbol << endl;
+            }
+        }
+    }
+    fout.close();
+}
+
+vector<double> varyThreshold(const vector< vector<double> >& matrix) {
     vector<double> values;
     values.reserve(matrix.size()*matrix.size());
     for (const auto& row : matrix) {
@@ -81,42 +94,18 @@ vector<unsigned int> varyThreshold(const vector< vector<double> >& matrix) {
         }
     }
     sort(values.begin(), values.end());
+//    cout << "highest correrlation value is: " << (values.back()) << endl;
 
-    vector<unsigned int> numValuesLowerThan;
-    numValuesLowerThan.reserve(100);
+    vector<double> percentageValuesLowerThan;
     unsigned int count = 0;
-    for (float t = 0.0; t < 3.0; t += 0.01) {
+    for (double t = -1.0; t < 1.01; t += 0.01) {
         while (count < values.size() && values[count] < t) {
             count ++;
         }
 //        cout << "num of values lower than " << t << " : " << count << "[" << double(count)/double(values.size()) << "%]" << endl;
-        numValuesLowerThan.push_back(count);
+        percentageValuesLowerThan.push_back(double(count)/double(values.size()));
     }
-    return numValuesLowerThan;
-}
-
-vector<Portfolio> initPortfolios(Market& market, unsigned int offset, vector<bool> actionIndexes) {
-    vector<Portfolio> portfolios;
-    // put in a focus for each one
-    for (unsigned int i = 0; i < market.size(); i++) {
-        portfolios.emplace_back(Portfolio(&market[i], offset));
-
-        // for each data point
-        for (unsigned int data_index = 0; data_index < market[0].data.size(); data_index++) {
-            if (actionIndexes[data_index]) {
-                portfolios[i].doAction(market, data_index);
-                if (i == actionIndexes.size()-1) {
-                    portfolios[i].finalizeActions(market, data_index);
-                }
-                if (isnan(portfolios[i].getMoney())) {
-                    cout << "Portfolio [" << i << "," << market[i].symbol << "] became nan with action at timestep: " << data_index << endl;
-                }
-            }
-        }
-//        cout << "Created Portfolio [" << i << "," + market[i].symbol + "] - Total Return with offset " << offset << ": " << portfolios[i].getMoney() << endl;
-    }
-
-    return portfolios;
+    return percentageValuesLowerThan;
 }
 
 vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
@@ -131,20 +120,15 @@ vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
 }
 
 void makeGraph(const vector< vector<double> >& matrix) {
-    igraph_t g;
-    igraph_scg_matrix_t mat;
-
-//    igraph_matrix_init(&matrix[0][0], matrix.size(), matrix.size());
+     Graph g;
 
     // matrix should be a square matrix
     for (unsigned int r = 0; r < matrix.size(); r++) {
         for (unsigned int c = 0; c < r; c++) {
-            MATRIX(mat, r, c) = matrix[r][c];
+//            MATRIX(mat, r, c) = matrix[r][c];
+
         }
     }
-
-
-
 }
 
 int main(int argc, char *argv[]) {
@@ -153,19 +137,20 @@ int main(int argc, char *argv[]) {
 
     Market market;
     market.init(STOCK_NAMES);
-    vector< vector<unsigned int> > countMap(MAX_OFFSET);
+    vector< vector<double> > countMap(MAX_OFFSET);
 
     // declare the indexes at which to
-    for (unsigned int offset = 1; offset < 2; offset++) {
+    for (unsigned int offset = 1; offset < MAX_OFFSET; offset++) {
         cout << "working on offset " << offset << endl;
         vector<bool> actionIndexes                  = defineActionTimes(market[0].data.size(), offset);
-        vector<Portfolio> portfolios                = initPortfolios(market, offset, actionIndexes);
+        vector<Portfolio> portfolios                = market.initPortfolios(offset, actionIndexes);
         vector< vector<double> > correlationMatrix  = getCorrelationMatrix(market, portfolios);
 
         makeGraph(correlationMatrix);
 
         cout << "outputting..." << endl;
         outputCorrelationMatrixToFile("../out/correlation" + to_string(offset) + ".csv", correlationMatrix, market, 0.0);
+        outputEdgeListToFile("../out/edge_list" + to_string(offset) + ".csv", correlationMatrix, market, .8);
         countMap[offset-1] = varyThreshold(correlationMatrix);
     }
 

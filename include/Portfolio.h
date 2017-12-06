@@ -7,6 +7,8 @@
 
 #include <map>
 
+class Market;
+
 #include "Stock.h"
 #include "Market.h"
 
