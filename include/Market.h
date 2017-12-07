@@ -12,7 +12,7 @@ class Portfolio;
 
 class Market : public vector<Stock> {
 public:
-    void init(const vector<string>& names);
+    void init();
     void print() const;
     vector<Portfolio> initPortfolios(unsigned int offset, vector<bool> actionIndexes);
 };

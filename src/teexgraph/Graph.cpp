@@ -116,14 +116,15 @@ bool Graph::loadFromMatrixWithThreshold(const vector<vector<double> > &matrix, d
         }
     }
 
-    clog << "- " << edgesAdded << " edges added (m = " << m << ") in total\n"
-         << "- " << edgesSkipped << " edges skipped" << endl;
+//    clog << "- " << edgesAdded << " edges added (m = " << m << ") in total\n"
+//         << "- " << edgesSkipped << " edges skipped" << endl;
 
-    if(edgesSkipped - selfm > 0)
-        clog << " (out-of-bounds, increase maxn in Graph.h!)";
-    clog << "- " << selfm << " self-edges added" << endl;
-    clog << endl;
+//    if(edgesSkipped - selfm > 0)
+//        clog << " (out-of-bounds, increase maxn in Graph.h!)";
+//    clog << "- " << selfm << " self-edges added" << endl;
+//    clog << endl;
 
+    makeUndirected();
     if(edgesSkipped == 0) {
         sortEdgeList();
         clog << "Loading done." << endl << endl;
@@ -131,7 +132,7 @@ bool Graph::loadFromMatrixWithThreshold(const vector<vector<double> > &matrix, d
     }
     cerr << "Loading failed." << endl << endl;
 //    clear();
-    makeUndirected();
+    return false;
 }
 
 // load a graph from a file in edge list format: [u v]

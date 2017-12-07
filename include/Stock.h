@@ -17,6 +17,10 @@ public:
     vector<float> data;
     void print() const;
     void getValuesFromFile();
+
+    // variables for graph stuff
+    double betweeness;
+    double pageRank;
 };
 
 

@@ -4,10 +4,11 @@
 
 #include <iostream>
 #include <cmath>
+#include <config.h>
 #include "Market.h"
 
-void Market::init(const vector<string>& names) {
-    for (const auto& sn : names) {
+void Market::init() {
+    for (const auto& sn : STOCK_NAMES) {
         emplace_back(Stock(sn));
     }
 }
