@@ -2,7 +2,6 @@
 #include <Portfolio.h>
 #include <cmath>
 
-#include <igraph/igraph.h>
 #include <teexgraph/Graph.h>
 
 #include "Logger.h"
@@ -119,15 +118,19 @@ vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
     return indeces;
 }
 
-void makeGraph(const vector< vector<double> >& matrix) {
-     Graph g;
+void makeGraph(const vector< vector<double> >& matrix, const Market& market) {
+    Graph g;
+    vector<string> stockNames(matrix.size());
 
-    // matrix should be a square matrix
-    for (unsigned int r = 0; r < matrix.size(); r++) {
-        for (unsigned int c = 0; c < r; c++) {
-//            MATRIX(mat, r, c) = matrix[r][c];
+    for(unsigned int i = 0; i < stockNames.size(); i++) {
+        stockNames[i] = market[i].symbol;
+    }
+    g.loadFromMatrixWithThreshold(matrix, 0.9, stockNames);
 
-        }
+    vector<double> centralities = g.pageRankCentrality();
+
+    for (unsigned int i = 0; i < stockNames.size(); i++) {
+        cout << stockNames[i] << ": " << centralities[i] << endl;
     }
 }
 
@@ -146,7 +149,7 @@ int main(int argc, char *argv[]) {
         vector<Portfolio> portfolios                = market.initPortfolios(offset, actionIndexes);
         vector< vector<double> > correlationMatrix  = getCorrelationMatrix(market, portfolios);
 
-        makeGraph(correlationMatrix);
+        makeGraph(correlationMatrix, market);
 
         cout << "outputting..." << endl;
         outputCorrelationMatrixToFile("../out/correlation" + to_string(offset) + ".csv", correlationMatrix, market, 0.0);

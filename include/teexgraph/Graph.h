@@ -43,6 +43,7 @@ class Graph {
     void clear();
     bool loadDirected(const string);
     bool loadUndirected(const string);
+    bool loadFromMatrixWithThreshold(const vector< vector<double> >& matrix, double threshold, const vector<string>& names);
 
     // components        
     void computeSCC();

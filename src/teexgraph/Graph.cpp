@@ -99,6 +99,40 @@ bool Graph::loadUndirected(const string filename) {
     return true;
 } // loadUndirected
 
+bool Graph::loadFromMatrixWithThreshold(const vector<vector<double> > &matrix, double threshold, const vector<string>& names) {
+    if (loaded)
+        clear();
+    unsigned int edgesAdded = 0, edgesSkipped = 0;
+
+    for (unsigned int r = 0; r < matrix.size(); r++) {
+        for (unsigned int c = r+1; c < matrix[r].size(); c++) {
+            if (matrix[r][c] > threshold || matrix[r][c] < -threshold) {
+                if (addEdge(mapNode(names[r]), mapNode(names[c]))) {
+                    edgesAdded++;
+                } else {
+                    edgesSkipped++;
+                }
+            }
+        }
+    }
+
+    clog << "- " << edgesAdded << " edges added (m = " << m << ") in total\n"
+         << "- " << edgesSkipped << " edges skipped" << endl;
+
+    if(edgesSkipped - selfm > 0)
+        clog << " (out-of-bounds, increase maxn in Graph.h!)";
+    clog << "- " << selfm << " self-edges added" << endl;
+    clog << endl;
+
+    if(edgesSkipped == 0) {
+        sortEdgeList();
+        clog << "Loading done." << endl << endl;
+        return true;
+    }
+    cerr << "Loading failed." << endl << endl;
+//    clear();
+    makeUndirected();
+}
 
 // load a graph from a file in edge list format: [u v]
 bool Graph::loadDirected(const string filename) {
