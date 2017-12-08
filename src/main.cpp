@@ -4,6 +4,7 @@
 
 #include <teexgraph/Graph.h>
 #include <AdjMatrix.h>
+#include <PropertyMatrix.h>
 
 #include "config.h"
 
@@ -14,7 +15,7 @@ bool shootWithProbability(double prob) {
     return (shot <= prob);
 }
 
-void outputCorrelationMatrixToFile(const string& filename, const AdjMatrix& matrix, Market& market, double threshold) {
+void outputMatrixToFile(const string& filename, const AdjMatrix& matrix, Market& market, double threshold) {
     ofstream fout(filename);
     for (unsigned int i = 0; i < market.size(); i++) {
         cout << "," << market[i].symbol;
@@ -87,10 +88,10 @@ int main(int argc, char *argv[]) {
 
     Market market;
     market.init();
-    AdjMatrix countMap(MAX_OFFSET);
+    PropertyMatrix edgeThreshold; // -1.0 to 1.0 by 0.01 increments
 
     // declare the indexes at which to
-    for (unsigned int offset = 1; offset < MAX_OFFSET; offset++) {
+    for (unsigned int offset = 0; offset < MAX_OFFSET; offset++) {
         srand(2);
         AdjMatrix correlationMatrix(market.size());
         cout << "working on offset " << offset << endl;
@@ -100,16 +101,13 @@ int main(int argc, char *argv[]) {
         correlationMatrix.fillCorrelationMatrix(market, portfolios);
         correlationMatrix.makeGraph(market);
 
-        cout << "outputting..." << endl;
-        outputCorrelationMatrixToFile("../out/correlation" + to_string(offset) + ".csv", correlationMatrix, market, 0.0);
-        outputEdgeListToFile("../out/edge_list" + to_string(offset) + ".csv", correlationMatrix, market, .8);
-        countMap[offset-1] = correlationMatrix.varyThreshold();
+        correlationMatrix.varyThreshold(edgeThreshold);
     }
 
-    for (unsigned int r = 0; r < MAX_OFFSET-1; r++) {
+    for (unsigned int r = 0; r < MAX_OFFSET; r++) {
         cout << r+1 << ": ";
-        for (unsigned int c = 0; c < countMap[r].size(); c++) {
-            cout << countMap[r][c] << ", ";
+        for (unsigned int c = 0; c < edgeThreshold[r].size(); c++) {
+//            cout << edgeThreshold[r][c] << ", ";
         }
         cout << endl;
     }

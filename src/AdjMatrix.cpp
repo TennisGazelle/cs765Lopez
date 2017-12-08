@@ -39,15 +39,22 @@ double AdjMatrix::getAvgCorrelationBetween(int i, int j, Market &market, vector<
 }
 
 void AdjMatrix::makeGraph(Market &m) {
+    double threshold = 0.0;
     Graph g;
 
-    g.loadFromMatrixWithThreshold((*this), 0.9, marketStockNames);
+    g.loadFromMatrixWithThreshold((*this), threshold, marketStockNames);
 
     vector<double> centralities = g.pageRankCentrality();
 
-    for (unsigned int i = 0; i < marketStockNames.size(); i++) {
-        cout << marketStockNames[i] << ": " << centralities[i] << endl;
+    if (centralities.size() == 0) {
+        cout << "There were no centralities for a threshold of " << threshold << endl;
+    } else {
+        for (unsigned int i = 0; i < marketStockNames.size(); i++) {
+            cout << marketStockNames[i] << ": " << centralities[i] << endl;
+        }
     }
+
+
 }
 
 vector<double> AdjMatrix::getValues() const {
@@ -60,7 +67,7 @@ vector<double> AdjMatrix::getValues() const {
     return values;
 }
 
-vector<double> AdjMatrix::varyThreshold() const {
+void AdjMatrix::varyThreshold(PropertyMatrix& propertyMatrix) const {
     vector<double> values = getValues();
 
     sort(values.begin(), values.end());
@@ -71,9 +78,12 @@ vector<double> AdjMatrix::varyThreshold() const {
         while (count < values.size() && values[count] < t) {
             count ++;
         }
-        percentageValuesLowerThan.push_back(double(count)/double(values.size()));
+
+//        percentageValuesLowerThan.push_back(double(count)/double(values.size()));
+        propertyMatrix.at(t, 0).percentOfEdges = double(count)/double(values.size());
     }
-    return percentageValuesLowerThan;
+
+//    return percentageValuesLowerThan;
 }
 
 pair<double, double> AdjMatrix::getEdgeWeightDistribution() const {

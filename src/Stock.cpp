@@ -8,6 +8,7 @@
 
 Stock::Stock(const string &incomingSymbol) : symbol(incomingSymbol) {
     getValuesFromFile();
+    calcPChanges();
 }
 
 void Stock::print() const {
@@ -40,4 +41,11 @@ void Stock::getValuesFromFile() {
     }
     data.erase(data.end()-1);
     fin.close();
+}
+
+void Stock::calcPChanges() {
+    percentChanges.clear();
+    for (unsigned int i = 1; i < data.size(); i++) {
+        percentChanges[i] = data[i]/data[i-1];
+    }
 }

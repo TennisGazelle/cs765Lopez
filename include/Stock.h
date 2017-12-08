@@ -15,8 +15,10 @@ public:
     Stock(const string& incomingSymbol);
     string symbol;
     vector<float> data;
+    vector<double> percentChanges;
     void print() const;
     void getValuesFromFile();
+    void calcPChanges();
 
     // variables for graph stuff
     double betweeness;

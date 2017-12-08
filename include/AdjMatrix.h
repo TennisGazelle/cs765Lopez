@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "Portfolio.h"
+#include "PropertyMatrix.h"
 
 using namespace std;
 
@@ -19,7 +20,7 @@ public:
     void makeGraph(Market &m);
 
     vector<double> getValues() const;
-    vector<double> varyThreshold() const;
+    void varyThreshold(PropertyMatrix& propertyMatrix) const;
     pair<double, double> getEdgeWeightDistribution() const;
 
 
