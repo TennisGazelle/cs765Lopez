@@ -1,6 +1,5 @@
 #include <iostream>
 #include <Portfolio.h>
-#include <cmath>
 
 #include <teexgraph/Graph.h>
 #include <AdjMatrix.h>
@@ -56,6 +55,38 @@ void outputEdgeListToFile(const string& filename, const AdjMatrix& matrix, Marke
     fout.close();
 }
 
+void outputPropertyMatrixToFile(const string& fileHeader, const PropertyMatrix& matrix, PropertyEnum pe) {
+    ofstream fout(fileHeader);
+    for (double t = -1.0; t < 1.01; t+= 0.01) {
+        fout << t << ",";
+    }
+    fout << endl;
+
+    for (const auto& r : matrix) {
+        for (const auto& c : r) {
+            switch (pe) {
+                case DENSITY:
+                    fout << c.density << ",";
+                    break;
+                case AVG_DEGREE:
+                    fout << c.avgDegree << ",";
+                    break;
+                case AVG_DISTANCE:
+                    fout << c.avgDistance << ",";
+                    break;
+                case PERCENT_EDGES:
+                    fout << c.percentOfEdges << ",";
+                    break;
+                case CLUSTERING_COEFFICIENT:
+                    fout << c.clusteringCoefficient << ",";
+                    break;
+            }
+        }
+        fout << endl;
+    }
+    fout.close();
+}
+
 vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
     vector<bool> indeces(size);
     for (unsigned int i = 0; i < indeces.size(); i++) {
@@ -88,7 +119,7 @@ int main(int argc, char *argv[]) {
 
     Market market;
     market.init();
-    PropertyMatrix edgeThreshold; // -1.0 to 1.0 by 0.01 increments
+    PropertyMatrix properties; // -1.0 to 1.0 by 0.01 increments
 
     // declare the indexes at which to
     for (unsigned int offset = 0; offset < MAX_OFFSET; offset++) {
@@ -98,19 +129,18 @@ int main(int argc, char *argv[]) {
         vector<bool> actionIndexes                  = defineActionTimes(market[0].data.size(), offset);
         vector<Portfolio> portfolios                = market.initPortfolios(offset, actionIndexes);
 
-        correlationMatrix.fillCorrelationMatrix(market, portfolios);
-        correlationMatrix.makeGraph(market);
+//        correlationMatrix.fillCorrelationMatrix(market, portfolios);
+        correlationMatrix.fillPearsonCorrelation(market);
+//        correlationMatrix.makeGraph(market);
 
-        correlationMatrix.varyThreshold(edgeThreshold);
+        correlationMatrix.varyEdgeThreshold(properties, offset);
     }
 
-    for (unsigned int r = 0; r < MAX_OFFSET; r++) {
-        cout << r+1 << ": ";
-        for (unsigned int c = 0; c < edgeThreshold[r].size(); c++) {
-//            cout << edgeThreshold[r][c] << ", ";
-        }
-        cout << endl;
-    }
+    outputPropertyMatrixToFile("../out/density_map.csv", properties, DENSITY);
+    outputPropertyMatrixToFile("../out/avg_degree_map.csv", properties, AVG_DEGREE);
+    outputPropertyMatrixToFile("../out/avg_distance_map.csv", properties, AVG_DISTANCE);
+    outputPropertyMatrixToFile("../out/percent_edges_map.csv", properties, PERCENT_EDGES);
+    outputPropertyMatrixToFile("../out/clustering_coef_map.csv", properties, CLUSTERING_COEFFICIENT);
 
     return 0;
 }

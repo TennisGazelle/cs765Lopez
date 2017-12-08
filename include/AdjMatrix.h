@@ -17,11 +17,14 @@ public:
 
     void fillCorrelationMatrix(Market &m, vector<Portfolio>& pfs);
     double getAvgCorrelationBetween(int i, int j, Market& market, vector<Portfolio>& portfolios);
+
+    void fillPearsonCorrelation(Market &m);
+    double getPearsonCorrelationBetween(int i, int j, Market& market);
+
     void makeGraph(Market &m);
 
     vector<double> getValues() const;
-    void varyThreshold(PropertyMatrix& propertyMatrix) const;
-    pair<double, double> getEdgeWeightDistribution() const;
+    void varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int offset) const;
 
 
     vector<string> marketStockNames;

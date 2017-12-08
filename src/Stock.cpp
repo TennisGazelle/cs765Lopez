@@ -26,7 +26,7 @@ void Stock::getValuesFromFile() {
     }
 
     data.clear();
-    data.reserve(150);
+    data.reserve(100);
     // given your stock symbol
     string filename = "../in/" + symbol + ".log";
     ifstream fin;
@@ -36,7 +36,7 @@ void Stock::getValuesFromFile() {
         float temp;
         fin >> temp;
         data.push_back(temp);
-        if (data.size() > 150)
+        if (data.size() > 100)
             break;
     }
     data.erase(data.end()-1);
@@ -46,6 +46,6 @@ void Stock::getValuesFromFile() {
 void Stock::calcPChanges() {
     percentChanges.clear();
     for (unsigned int i = 1; i < data.size(); i++) {
-        percentChanges[i] = data[i]/data[i-1];
+        percentChanges.push_back(data[i]/data[i-1]);
     }
 }

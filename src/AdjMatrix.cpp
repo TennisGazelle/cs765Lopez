@@ -22,7 +22,6 @@ void AdjMatrix::fillCorrelationMatrix(Market &m, vector<Portfolio> &pfs) {
             (*this)[i][j] = this->getAvgCorrelationBetween(i, j, m, pfs);
         }
     }
-
 }
 
 double AdjMatrix::getAvgCorrelationBetween(int i, int j, Market &market, vector<Portfolio> &portfolios) {
@@ -37,6 +36,62 @@ double AdjMatrix::getAvgCorrelationBetween(int i, int j, Market &market, vector<
     }
     return (sum/double(portfolios.size()));
 }
+
+pair<double, double> getValueDistribution(vector<double>& values)  {
+    double sum = 0.0, average = 0.0, variance = 0.0;
+
+    for (auto& v : values) {
+        sum += v;
+    }
+    average = sum/values.size();
+
+    sum = 0;
+    for (auto& v : values) {
+        sum += pow(average - v ,2);
+    }
+    variance = sum/(values.size()-1);
+
+    return {average, variance};
+}
+
+void AdjMatrix::fillPearsonCorrelation(Market &m) {
+    marketStockNames.clear();
+    for (unsigned int i = 0; i < m.size(); i++) {
+        marketStockNames.push_back(m[i].symbol);
+        for (unsigned int j = 0; j < m.size(); j++) {
+            (*this)[i][j] = this->getPearsonCorrelationBetween(i, j, m);
+        }
+    }
+}
+
+double AdjMatrix::getPearsonCorrelationBetween(int i, int j, Market &market) {
+    double r_i_avg, r_j_avg;
+    vector<double> d_i, d_j;
+
+    d_i = market[i].percentChanges;
+    d_j = market[j].percentChanges;
+
+    r_i_avg = getValueDistribution(d_i).first;
+    r_j_avg = getValueDistribution(d_j).first;
+    for (int index = 0; index < d_i.size(); index++) {
+        d_i[index] -= r_i_avg;
+        d_j[index] -= r_j_avg;
+    }
+
+    double numerator = 0.0;
+    double denominator_left = 0.0, denominator_right = 0.0;
+    for (int index = 0; index < d_i.size(); index++) {
+        numerator += d_i[index]*d_j[index];
+        denominator_left += pow(d_i[index], 2);
+        denominator_right += pow(d_j[index], 2);
+    }
+
+    denominator_left = sqrt(denominator_left);
+    denominator_right = sqrt(denominator_right);
+
+    return numerator / (denominator_left * denominator_right);
+}
+
 
 void AdjMatrix::makeGraph(Market &m) {
     double threshold = 0.0;
@@ -53,8 +108,6 @@ void AdjMatrix::makeGraph(Market &m) {
             cout << marketStockNames[i] << ": " << centralities[i] << endl;
         }
     }
-
-
 }
 
 vector<double> AdjMatrix::getValues() const {
@@ -67,39 +120,30 @@ vector<double> AdjMatrix::getValues() const {
     return values;
 }
 
-void AdjMatrix::varyThreshold(PropertyMatrix& propertyMatrix) const {
+void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int offset) const {
     vector<double> values = getValues();
 
     sort(values.begin(), values.end());
 
-    vector<double> percentageValuesLowerThan;
     unsigned int count = 0;
     for (double t = -1.0; t < 1.01; t += 0.01) {
         while (count < values.size() && values[count] < t) {
             count ++;
         }
 
-//        percentageValuesLowerThan.push_back(double(count)/double(values.size()));
-        propertyMatrix.at(t, 0).percentOfEdges = double(count)/double(values.size());
-    }
+        // get density of graph at this point
+        Graph g;
+        g.loadFromMatrixWithThreshold((*this), t, marketStockNames);
 
-//    return percentageValuesLowerThan;
+        Property property = propertyMatrix.at(t, offset);
+
+        property.density = g.density(FULL);
+        property.avgDegree = g.averageDegree(FULL);
+//        property.avgDistance = g.averageDistance(FULL, 1.0);
+        property.percentOfEdges = double(count)/double(values.size());
+        property.clusteringCoefficient = g.averageClusteringCoefficient(FULL);
+
+        propertyMatrix.assignAt(t, offset, property);
+    }
 }
 
-pair<double, double> AdjMatrix::getEdgeWeightDistribution() const {
-    double sum = 0.0, average = 0.0, variance = 0.0;
-    vector<double> values = getValues();
-
-    for (auto& v : values) {
-        sum += v;
-    }
-    average = sum/values.size();
-
-    sum = 0;
-    for (auto& v : values) {
-        sum += pow(average - v ,2);
-    }
-    variance = sum/(values.size()-1);
-
-    return {average, variance};
-}
