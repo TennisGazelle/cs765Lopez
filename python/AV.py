@@ -2,7 +2,6 @@
 
 import json
 import requests
-from Graph import *
 
 stocks = []
 # this should look like this per stock
@@ -150,7 +149,7 @@ stock_names = sorted([
     "DRI",
     "DVA",
     "DE",
-    "DLPH",
+    # "DLPH",
     "DAL",
     "XRAY",
     "DVN",
@@ -509,7 +508,7 @@ stock_names = sorted([
     "WYN",
     "WYNN",
     "XEL",
-    "XRX",
+    # "XRX",
     "XLNX",
     "XL",
     "XYL",
@@ -651,11 +650,14 @@ if __name__ == '__main__':
     #         distance = abs(stocks[left] - stocks[right])
 
     # stock = stock_names[0]
+    for s in stock_names:
+        print ("   \item {}".format(s))
+
     corrected = []
     for stock in stock_names:
         # print ("compiling info for {}".format(stock))
-        # stock_values = av.fetchStockInformationTimeSeries(stock, function=AV_TIME_SERIES['DAILY'], interval=AV_TIME_INTERVALS['FIFTEEN_MIN'])
         try:
+            # stock_values = av.fetchStockInformationTimeSeries(stock, function=AV_TIME_SERIES['DAILY'], interval=AV_TIME_INTERVALS['FIFTEEN_MIN'])
             stock_values = av.fetchStockTechIndTimeSeries(stock, function=AV_TECHNICAL_INDICATORS['SimpleAverage'], interval=AV_TIME_INTERVALS['FIFTEEN_MIN'], time_period=60, series_type=AV_SERIES_TYPES['open'])
             # print (stock_values)
             print ("writing info for {}, {} total lines".format(stock, len(stock_values)))
@@ -664,7 +666,7 @@ if __name__ == '__main__':
                     f.write("{}\n".format(sv))
             corrected += [stock]
         except TypeError as te:
-            print ("Error for stock {}".format(stock))
+            print ("Error for stock {}".format(stock), te)
             pass
 
     print (json.dumps(corrected, indent = 3))

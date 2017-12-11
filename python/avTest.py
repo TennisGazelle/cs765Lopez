@@ -1,10 +1,8 @@
 #!/usr/bin/python3.4
 
 import json
-import requests
-import shutil
-import numpy as np
 import matplotlib.pyplot as plt
+import requests
 from graph_tool.all import *
 
 AV_TIME_SERIES = {
@@ -102,4 +100,12 @@ def main():
         print(json.dumps(getStockInfo(stock), indent = 3))
 
 if __name__ == '__main__':
-    main()
+    # main()
+    # pick up lines from list
+    l = []
+    with open("list.txt", "r") as f:
+        l = f.readlines()
+    for i in range(0, len(l)):
+        l[i] = l[i].strip('\n')
+
+    print (json.dumps(l, indent=3))
