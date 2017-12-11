@@ -25,8 +25,10 @@ void Stock::getValuesFromFile() {
         throw logic_error("Symbol name is empty");
     }
 
+    const static int MAX_SIZE = 180;
+
     data.clear();
-    data.reserve(100);
+    data.reserve(MAX_SIZE);
     // given your stock symbol
     string filename = "../in/" + symbol + ".log";
     ifstream fin;
@@ -36,7 +38,7 @@ void Stock::getValuesFromFile() {
         float temp;
         fin >> temp;
         data.push_back(temp);
-        if (data.size() > 100)
+        if (data.size() > MAX_SIZE)
             break;
     }
     data.erase(data.end()-1);

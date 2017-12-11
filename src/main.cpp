@@ -3,7 +3,6 @@
 
 #include <teexgraph/Graph.h>
 #include <AdjMatrix.h>
-#include <PropertyMatrix.h>
 
 #include "config.h"
 
@@ -56,31 +55,69 @@ void outputEdgeListToFile(const string& filename, const AdjMatrix& matrix, Marke
 }
 
 void outputPropertyMatrixToFile(const string& fileHeader, const PropertyMatrix& matrix, PropertyEnum pe) {
+    char delimeter = ',';
     ofstream fout(fileHeader);
-    for (double t = -1.0; t < 1.01; t+= 0.01) {
-        fout << t << ",";
+    fout << delimeter;
+    for (double t = 0.0; t < 1.01; t += 0.01) {
+        fout << t << delimeter;
     }
     fout << endl;
 
-    for (const auto& r : matrix) {
-        for (const auto& c : r) {
+    for (unsigned int r = 0; r < matrix.size(); r++) {
+        if (r < MAX_OFFSET)
+            fout << r;
+        else
+            fout << "PEARSON";
+        fout << delimeter;
+        for (unsigned int c = 100; c < matrix[r].size(); c++) {
             switch (pe) {
                 case DENSITY:
-                    fout << c.density << ",";
+                    fout << matrix[r][c].density;
                     break;
                 case AVG_DEGREE:
-                    fout << c.avgDegree << ",";
+                    fout << matrix[r][c].avgDegree;
                     break;
                 case AVG_DISTANCE:
-                    fout << c.avgDistance << ",";
+                    fout << matrix[r][c].avgDistance;
                     break;
                 case PERCENT_EDGES:
-                    fout << c.percentOfEdges << ",";
+                    fout << matrix[r][c].percentOfEdges;
                     break;
                 case CLUSTERING_COEFFICIENT:
-                    fout << c.clusteringCoefficient << ",";
+                    fout << matrix[r][c].clusteringCoefficient;
+                    break;
+
+                case BETWEENNESS_DISTRIBUTION_AVG:
+                    fout << matrix[r][c].betweennessDistribution.first;
+                    break;
+                case BETWEENNESS_DISTRIBUTION_STD_DEV:
+                    fout << matrix[r][c].betweennessDistribution.second;
+                    break;
+                case BETWEENESS_RANGE_MIN:
+                case BETWEENESS_RANGE_MAX:
+                    break;
+
+                case OUTDEGREE_DISTRIBUTION_AVG:
+                    fout << matrix[r][c].outdegreeDistribution.first;
+                    break;
+                case OUTDEGREE_DISTRIBUTION_STD_DEV:
+                    fout << matrix[r][c].outdegreeDistribution.second;
+                    break;
+                case OUTDEGREE_RANGE_MIN:
+                case OUTDEGREE_RANGE_MAX:
+                    break;
+
+                case PAGERANK_DISTRIBUTION_AVG:
+                    fout << matrix[r][c].pagerankDistribution.first;
+                    break;
+                case PAGERANK_DISTRIBUTION_STD_DEV:
+                    fout << matrix[r][c].pagerankDistribution.second;
+                    break;
+                case PAGERANK_RANGE_MIN:
+                case PAGERANK_RANGE_MAX:
                     break;
             }
+            fout << delimeter;
         }
         fout << endl;
     }
@@ -90,7 +127,7 @@ void outputPropertyMatrixToFile(const string& fileHeader, const PropertyMatrix& 
 vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
     vector<bool> indeces(size);
     for (unsigned int i = 0; i < indeces.size(); i++) {
-        indeces[i] = shootWithProbability(.24);
+        indeces[i] = shootWithProbability(0.5);
         if (i+offset >= indeces.size()) {
             indeces[i] = false;
         }
@@ -122,25 +159,31 @@ int main(int argc, char *argv[]) {
     PropertyMatrix properties; // -1.0 to 1.0 by 0.01 increments
 
     // declare the indexes at which to
+    vector<bool> actionIndexes = defineActionTimes(market[0].data.size(), 0);
+
     for (unsigned int offset = 0; offset < MAX_OFFSET; offset++) {
-        srand(2);
         AdjMatrix correlationMatrix(market.size());
         cout << "working on offset " << offset << endl;
-        vector<bool> actionIndexes                  = defineActionTimes(market[0].data.size(), offset);
-        vector<Portfolio> portfolios                = market.initPortfolios(offset, actionIndexes);
-
-//        correlationMatrix.fillCorrelationMatrix(market, portfolios);
-        correlationMatrix.fillPearsonCorrelation(market);
-//        correlationMatrix.makeGraph(market);
-
+        vector<Portfolio> portfolios = market.initPortfolios(offset, actionIndexes);
+        correlationMatrix.fillCorrelationMatrix(market, portfolios);
         correlationMatrix.varyEdgeThreshold(properties, offset);
     }
 
+    AdjMatrix correlationMatrix(market.size());
+    cout << "working on pearson" << endl;
+    correlationMatrix.fillPearsonCorrelation(market);
+    correlationMatrix.varyEdgeThreshold(properties, MAX_OFFSET);
+
     outputPropertyMatrixToFile("../out/density_map.csv", properties, DENSITY);
     outputPropertyMatrixToFile("../out/avg_degree_map.csv", properties, AVG_DEGREE);
-    outputPropertyMatrixToFile("../out/avg_distance_map.csv", properties, AVG_DISTANCE);
+//    outputPropertyMatrixToFile("../out/avg_distance_map.csv", properties, AVG_DISTANCE);
     outputPropertyMatrixToFile("../out/percent_edges_map.csv", properties, PERCENT_EDGES);
     outputPropertyMatrixToFile("../out/clustering_coef_map.csv", properties, CLUSTERING_COEFFICIENT);
-
+//    outputPropertyMatrixToFile("../out/betweenness_avg.csv", properties, BETWEENNESS_DISTRIBUTION_AVG);
+//    outputPropertyMatrixToFile("../out/betweenness_std_dev.csv", properties, BETWEENNESS_DISTRIBUTION_STD_DEV);
+    outputPropertyMatrixToFile("../out/out_degree_avg.csv", properties, OUTDEGREE_DISTRIBUTION_AVG);
+    outputPropertyMatrixToFile("../out/out_degree_std_dev.csv", properties, OUTDEGREE_DISTRIBUTION_STD_DEV);
+    outputPropertyMatrixToFile("../out/pagerank_avg.csv", properties, PAGERANK_DISTRIBUTION_AVG);
+    outputPropertyMatrixToFile("../out/pagerank_std_dev.csv", properties, PAGERANK_DISTRIBUTION_STD_DEV);
     return 0;
 }

@@ -3,7 +3,7 @@ project(StockComplexNetworks)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMakeModules")
 
-SET(CXX11_FLAGS -std=gnu++11)
+SET(CXX11_FLAGS "-std=gnu++11 -O3 -Wall")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_FLAGS}")
 
 SET(INCLUDES ${PROJECT_SOURCE_DIR}/include include/config.h src/PropertyMatrix.cpp include/PropertyMatrix.h)

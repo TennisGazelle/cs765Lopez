@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <teexgraph/Graph.h>
+#include <Matrix.h>
 #include "AdjMatrix.h"
 
 AdjMatrix::AdjMatrix(unsigned int size) {
@@ -18,8 +19,9 @@ void AdjMatrix::fillCorrelationMatrix(Market &m, vector<Portfolio> &pfs) {
     marketStockNames.clear();
     for (unsigned int i = 0; i < m.size(); i++) {
         marketStockNames.push_back(m[i].symbol);
-        for (unsigned int j = 0; j < m.size(); j++) {
+        for (unsigned int j = i; j < m.size(); j++) {
             (*this)[i][j] = this->getAvgCorrelationBetween(i, j, m, pfs);
+            (*this)[j][i] = (*this)[i][j];
         }
     }
 }
@@ -28,30 +30,9 @@ double AdjMatrix::getAvgCorrelationBetween(int i, int j, Market &market, vector<
     double sum = 0.0;
     for (auto& p : portfolios) {
         sum += p.getCorrelationBetween(&market[i], &market[j]);
-        if (isnan(sum)) {
-            cout << endl;
-            cout << i << "," << j << ": " << p.getFocus()->symbol << " ";
-            p.print();
-        }
+        assert (!isnan(sum));
     }
     return (sum/double(portfolios.size()));
-}
-
-pair<double, double> getValueDistribution(vector<double>& values)  {
-    double sum = 0.0, average = 0.0, variance = 0.0;
-
-    for (auto& v : values) {
-        sum += v;
-    }
-    average = sum/values.size();
-
-    sum = 0;
-    for (auto& v : values) {
-        sum += pow(average - v ,2);
-    }
-    variance = sum/(values.size()-1);
-
-    return {average, variance};
 }
 
 void AdjMatrix::fillPearsonCorrelation(Market &m) {
@@ -71,8 +52,8 @@ double AdjMatrix::getPearsonCorrelationBetween(int i, int j, Market &market) {
     d_i = market[i].percentChanges;
     d_j = market[j].percentChanges;
 
-    r_i_avg = getValueDistribution(d_i).first;
-    r_j_avg = getValueDistribution(d_j).first;
+    r_i_avg = Matrix::getValueDistribution(d_i).first;
+    r_j_avg = Matrix::getValueDistribution(d_j).first;
     for (int index = 0; index < d_i.size(); index++) {
         d_i[index] -= r_i_avg;
         d_j[index] -= r_j_avg;
@@ -110,28 +91,18 @@ void AdjMatrix::makeGraph(Market &m) {
     }
 }
 
-vector<double> AdjMatrix::getValues() const {
-    vector<double> values(size()*size());
-    for (const auto& row : (*this)) {
-        for (const auto& col : row) {
-            values.push_back(abs(col));
-        }
-    }
-    return values;
-}
-
 void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int offset) const {
     vector<double> values = getValues();
 
     sort(values.begin(), values.end());
 
     unsigned int count = 0;
-    for (double t = -1.0; t < 1.01; t += 0.01) {
+    for (double t = 0.0; t < 1.01; t += 0.01) {
         while (count < values.size() && values[count] < t) {
             count ++;
         }
 
-        // get density of graph at this point
+        // generate graph and get stats at this point
         Graph g;
         g.loadFromMatrixWithThreshold((*this), t, marketStockNames);
 
@@ -142,6 +113,10 @@ void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int o
 //        property.avgDistance = g.averageDistance(FULL, 1.0);
         property.percentOfEdges = double(count)/double(values.size());
         property.clusteringCoefficient = g.averageClusteringCoefficient(FULL);
+
+//        property.betweennessDistribution = Matrix::getValueDistribution(g.betweennessCentrality(FULL, 1.0));
+        property.outdegreeDistribution = Matrix::getValueDistribution(g.outdegreeCentrality());
+        property.pagerankDistribution = Matrix::getValueDistribution(g.pageRankCentrality());
 
         propertyMatrix.assignAt(t, offset, property);
     }

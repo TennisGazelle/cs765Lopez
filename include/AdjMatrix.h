@@ -8,10 +8,11 @@
 #include <vector>
 #include "Portfolio.h"
 #include "PropertyMatrix.h"
+#include "Matrix.h"
 
 using namespace std;
 
-class AdjMatrix : public vector< vector<double> > {
+class AdjMatrix : public Matrix {
 public:
     AdjMatrix(unsigned int size);
 
@@ -23,7 +24,6 @@ public:
 
     void makeGraph(Market &m);
 
-    vector<double> getValues() const;
     void varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int offset) const;
 
 

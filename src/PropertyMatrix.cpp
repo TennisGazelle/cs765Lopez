@@ -6,7 +6,7 @@
 #include "PropertyMatrix.h"
 
 PropertyMatrix::PropertyMatrix() {
-    resize(MAX_OFFSET);
+    resize(MAX_OFFSET + 1);
     for (auto& r : (*this)) {
         r.resize(200);
     }

@@ -15,6 +15,14 @@ struct Property {
     double avgDistance;
     double percentOfEdges;
     double clusteringCoefficient;
+    pair<double, double> betweennessDistribution;
+    pair<double, double> betweennessRange;
+
+    pair<double, double> outdegreeDistribution;
+    pair<double, double> outdegreeRange;
+
+    pair<double, double> pagerankDistribution;
+    pair<double, double> pagerankRange;
 };
 
 enum PropertyEnum {
@@ -23,6 +31,22 @@ enum PropertyEnum {
     AVG_DISTANCE,
     PERCENT_EDGES,
     CLUSTERING_COEFFICIENT,
+
+    BETWEENNESS_DISTRIBUTION_AVG,
+    BETWEENNESS_DISTRIBUTION_STD_DEV,
+    BETWEENESS_RANGE_MIN,
+    BETWEENESS_RANGE_MAX,
+
+    OUTDEGREE_DISTRIBUTION_AVG,
+    OUTDEGREE_DISTRIBUTION_STD_DEV,
+    OUTDEGREE_RANGE_MIN,
+    OUTDEGREE_RANGE_MAX,
+
+    PAGERANK_DISTRIBUTION_AVG,
+    PAGERANK_DISTRIBUTION_STD_DEV,
+    PAGERANK_RANGE_MIN,
+    PAGERANK_RANGE_MAX,
+
 };
 
 // rows are offsets
