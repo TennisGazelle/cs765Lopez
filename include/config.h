@@ -10,6 +10,11 @@
 using namespace std;
 
 const unsigned int MAX_OFFSET = 50;
+
+#define PEARSON_W_SQUARE_V_SQUARE_ROOT  50
+#define PEARSON_W_LOG_V_EXP             51
+#define PEARSON_W_SINE_V_ARCSINE        52
+
 // list from here
 // https://github.com/datasets/s-and-p-500-companies/blob/master/data/constituents-financials.csv
 const vector<string> STOCK_NAMES = {
