@@ -6,6 +6,7 @@
 #define STOCKCOMPLEXNETWORKS_PROPERTYMATRIX_H
 
 #include <vector>
+#include <teexgraph/Graph.h>
 
 using namespace std;
 
@@ -23,6 +24,8 @@ struct Property {
 
     pair<double, double> pagerankDistribution;
     pair<double, double> pagerankRange;
+
+    Graph *g;
 };
 
 enum PropertyEnum {
@@ -46,8 +49,9 @@ enum PropertyEnum {
     PAGERANK_DISTRIBUTION_STD_DEV,
     PAGERANK_RANGE_MIN,
     PAGERANK_RANGE_MAX,
-
 };
+
+string to_string(const PropertyEnum pe);
 
 // rows are offsets
 // columns are percentage threshold
@@ -55,13 +59,23 @@ class PropertyMatrix : public vector< vector<Property> > {
 public:
     PropertyMatrix();
 
+    ~PropertyMatrix();
+
     const Property& at(double threshold, unsigned int offset) const;
     Property& at(double threshold, unsigned int offset);
     void assignAt(double threshold, unsigned int offset, const Property& incomingProp);
 
+    void outputAllPropertiesToFile() const;
+
+    void outputToFile(PropertyEnum propertyChoice) const;
+
+    vector<vector<pair<unsigned int, unsigned int> > > getTop10StrongestEdges() const;
+
 private:
     int thresholdToIndex(double threshold) const;
 
+    string fileHeader = "../out/", fileExtension = ".csv";
+    vector<vector<pair<unsigned int, unsigned int> > > top10StrongestEdgesLocations;
 };
 
 

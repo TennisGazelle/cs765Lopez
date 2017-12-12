@@ -35,17 +35,17 @@ double AdjMatrix::getAvgCorrelationBetween(int i, int j, Market &market, vector<
     return (sum/double(portfolios.size()));
 }
 
-void AdjMatrix::fillPearsonCorrelation(Market &m) {
+void AdjMatrix::fillPearsonCorrelation(Market &m, PearsonKernel pk) {
     marketStockNames.clear();
     for (unsigned int i = 0; i < m.size(); i++) {
         marketStockNames.push_back(m[i].symbol);
         for (unsigned int j = 0; j < m.size(); j++) {
-            (*this)[i][j] = this->getPearsonCorrelationBetween(i, j, m);
+            (*this)[i][j] = this->getPearsonCorrelationBetween(i, j, m, pk);
         }
     }
 }
 
-double AdjMatrix::getPearsonCorrelationBetween(int i, int j, Market &market) {
+double AdjMatrix::getPearsonCorrelationBetween(int i, int j, Market &market, PearsonKernel pk) {
     double r_i_avg, r_j_avg;
     vector<double> d_i, d_j;
 
@@ -63,12 +63,39 @@ double AdjMatrix::getPearsonCorrelationBetween(int i, int j, Market &market) {
     double denominator_left = 0.0, denominator_right = 0.0;
     for (int index = 0; index < d_i.size(); index++) {
         numerator += d_i[index]*d_j[index];
-        denominator_left += pow(d_i[index], 2);
-        denominator_right += pow(d_j[index], 2);
+
+        // apply the correct function
+        switch (pk) {
+            default:
+            case SQUARE_V_SQUARE_ROOT:
+                denominator_left += pow(d_i[index], 2);
+                denominator_right += pow(d_j[index], 2);
+                break;
+            case LOG_V_EXP:
+                denominator_left += exp(abs(d_i[index]));
+                denominator_right += exp(abs(d_j[index]));
+                break;
+            case SINE_V_ARCSINE:
+                denominator_left += asin(d_i[index]);
+                denominator_right += asin(d_j[index]);
+                break;
+        }
     }
 
-    denominator_left = sqrt(denominator_left);
-    denominator_right = sqrt(denominator_right);
+    switch (pk) {
+        default:
+        case SQUARE_V_SQUARE_ROOT:
+            denominator_left = sqrt(denominator_left);
+            denominator_right = sqrt(denominator_right);
+            break;
+        case LOG_V_EXP:
+            denominator_left = log(denominator_left);
+            denominator_right = log(denominator_right);
+            break;
+        case SINE_V_ARCSINE:
+            denominator_left = sin(denominator_left);
+            denominator_right = sin(denominator_right);
+    }
 
     return numerator / (denominator_left * denominator_right);
 }
@@ -103,22 +130,52 @@ void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int o
         }
 
         // generate graph and get stats at this point
-        Graph g;
-        g.loadFromMatrixWithThreshold((*this), t, marketStockNames);
-
         Property property = propertyMatrix.at(t, offset);
+        property.g = new Graph();
+        property.g->loadFromMatrixWithThreshold((*this), t, marketStockNames);
 
-        property.density = g.density(FULL);
-        property.avgDegree = g.averageDegree(FULL);
-//        property.avgDistance = g.averageDistance(FULL, 1.0);
+        property.density = property.g->density(FULL);
+        property.avgDegree = property.g->averageDegree(FULL);
+//        property.avgDistance = property.g->averageDistance(FULL, 1.0);
         property.percentOfEdges = double(count)/double(values.size());
-        property.clusteringCoefficient = g.averageClusteringCoefficient(FULL);
-
+        property.clusteringCoefficient = property.g->averageClusteringCoefficient(FULL);
 //        property.betweennessDistribution = Matrix::getValueDistribution(g.betweennessCentrality(FULL, 1.0));
-        property.outdegreeDistribution = Matrix::getValueDistribution(g.outdegreeCentrality());
-        property.pagerankDistribution = Matrix::getValueDistribution(g.pageRankCentrality());
+        auto temp = property.g->outdegreeCentrality();
+        property.outdegreeDistribution = Matrix::getValueDistribution(temp);
+        property.outdegreeRange = Matrix::getValueRange(temp);
+
+        temp = property.g->pageRankCentrality();
+        property.pagerankDistribution = Matrix::getValueDistribution(temp);
+        property.pagerankRange = Matrix::getValueRange(temp);
 
         propertyMatrix.assignAt(t, offset, property);
     }
 }
 
+vector<pair<unsigned int, unsigned int> > AdjMatrix::top10EdgeWeights() const {
+    vector<pair<pair<unsigned int, unsigned int>, double> > top10(10);
+    map<pair<unsigned int, unsigned int>, double> quickMapping;
+
+    for (unsigned int r = 0; size(); r++) {
+        for (unsigned int c = r + 1; c < at(r).size(); c++) {
+            quickMapping[{r, c}] = (*this)[r][c];
+        }
+    }
+
+    partial_sort_copy(quickMapping.begin(),
+                      quickMapping.end(),
+                      top10.begin(),
+                      top10.end(),
+                      [](pair<pair<unsigned int, unsigned int>, double> const &l,
+                         pair<pair<unsigned int, unsigned int>, double> const &r) {
+                          return l.second > r.second;
+                      });
+    vector<pair<unsigned int, unsigned int> > top10Keys;
+    top10Keys.reserve(10);
+
+    for (const pair<pair<unsigned int, unsigned int>, double> &both : top10) {
+        top10Keys.push_back(both.first);
+    }
+
+    return top10Keys;
+}

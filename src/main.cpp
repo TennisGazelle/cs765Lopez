@@ -94,7 +94,10 @@ void outputPropertyMatrixToFile(const string& fileHeader, const PropertyMatrix& 
                     fout << matrix[r][c].betweennessDistribution.second;
                     break;
                 case BETWEENESS_RANGE_MIN:
+                    fout << matrix[r][c].betweennessRange.first;
+                    break;
                 case BETWEENESS_RANGE_MAX:
+                    fout << matrix[r][c].betweennessRange.second;
                     break;
 
                 case OUTDEGREE_DISTRIBUTION_AVG:
@@ -104,7 +107,10 @@ void outputPropertyMatrixToFile(const string& fileHeader, const PropertyMatrix& 
                     fout << matrix[r][c].outdegreeDistribution.second;
                     break;
                 case OUTDEGREE_RANGE_MIN:
+                    fout << matrix[r][c].outdegreeRange.first;
+                    break;
                 case OUTDEGREE_RANGE_MAX:
+                    fout << matrix[r][c].outdegreeRange.second;
                     break;
 
                 case PAGERANK_DISTRIBUTION_AVG:
@@ -114,7 +120,10 @@ void outputPropertyMatrixToFile(const string& fileHeader, const PropertyMatrix& 
                     fout << matrix[r][c].pagerankDistribution.second;
                     break;
                 case PAGERANK_RANGE_MIN:
+                    fout << matrix[r][c].pagerankRange.first;
+                    break;
                 case PAGERANK_RANGE_MAX:
+                    fout << matrix[r][c].pagerankRange.second;
                     break;
             }
             fout << delimeter;
@@ -161,7 +170,7 @@ int main(int argc, char *argv[]) {
     // declare the indexes at which to
     vector<bool> actionIndexes = defineActionTimes(market[0].data.size(), 0);
 
-    for (unsigned int offset = 0; offset < MAX_OFFSET; offset++) {
+    for (unsigned int offset = 0; offset < 1; offset++) {
         AdjMatrix correlationMatrix(market.size());
         cout << "working on offset " << offset << endl;
         vector<Portfolio> portfolios = market.initPortfolios(offset, actionIndexes);
@@ -171,19 +180,18 @@ int main(int argc, char *argv[]) {
 
     AdjMatrix correlationMatrix(market.size());
     cout << "working on pearson" << endl;
-    correlationMatrix.fillPearsonCorrelation(market);
-    correlationMatrix.varyEdgeThreshold(properties, MAX_OFFSET);
+    correlationMatrix.fillPearsonCorrelation(market, SQUARE_V_SQUARE_ROOT);
+    correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_SQUARE_V_SQUARE_ROOT);
 
-    outputPropertyMatrixToFile("../out/density_map.csv", properties, DENSITY);
-    outputPropertyMatrixToFile("../out/avg_degree_map.csv", properties, AVG_DEGREE);
-//    outputPropertyMatrixToFile("../out/avg_distance_map.csv", properties, AVG_DISTANCE);
-    outputPropertyMatrixToFile("../out/percent_edges_map.csv", properties, PERCENT_EDGES);
-    outputPropertyMatrixToFile("../out/clustering_coef_map.csv", properties, CLUSTERING_COEFFICIENT);
-//    outputPropertyMatrixToFile("../out/betweenness_avg.csv", properties, BETWEENNESS_DISTRIBUTION_AVG);
-//    outputPropertyMatrixToFile("../out/betweenness_std_dev.csv", properties, BETWEENNESS_DISTRIBUTION_STD_DEV);
-    outputPropertyMatrixToFile("../out/out_degree_avg.csv", properties, OUTDEGREE_DISTRIBUTION_AVG);
-    outputPropertyMatrixToFile("../out/out_degree_std_dev.csv", properties, OUTDEGREE_DISTRIBUTION_STD_DEV);
-    outputPropertyMatrixToFile("../out/pagerank_avg.csv", properties, PAGERANK_DISTRIBUTION_AVG);
-    outputPropertyMatrixToFile("../out/pagerank_std_dev.csv", properties, PAGERANK_DISTRIBUTION_STD_DEV);
+    correlationMatrix.fillPearsonCorrelation(market, LOG_V_EXP);
+    correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_LOG_V_EXP);
+
+    correlationMatrix.fillPearsonCorrelation(market, SINE_V_ARCSINE);
+    correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_SINE_V_ARCSINE);
+
+
+    // output to file
+    properties.outputAllPropertiesToFile();
+
     return 0;
 }

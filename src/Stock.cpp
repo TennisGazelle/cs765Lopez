@@ -48,6 +48,6 @@ void Stock::getValuesFromFile() {
 void Stock::calcPChanges() {
     percentChanges.clear();
     for (unsigned int i = 1; i < data.size(); i++) {
-        percentChanges.push_back(data[i]/data[i-1]);
+        percentChanges.push_back(data[i] / data[i - 1] * 1000);
     }
 }
