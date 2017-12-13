@@ -55,13 +55,7 @@ PropertyMatrix::PropertyMatrix() {
 }
 
 PropertyMatrix::~PropertyMatrix() {
-    for (auto &r : (*this)) {
-        for (auto &v : r) {
-            if (v.g != nullptr) {
-                delete v.g;
-            }
-        }
-    }
+
 }
 
 void PropertyMatrix::assignAt(double threshold, unsigned int offset, const Property &incomingProp) {
@@ -78,10 +72,9 @@ Property& PropertyMatrix::at(double threshold, unsigned int offset) {
 }
 
 int PropertyMatrix::thresholdToIndex(double threshold) const {
-    if (threshold < -1.0 || threshold > 1.0) {
+    if (threshold < 0.0 || threshold > 1.0) {
         return -1;
     }
-    threshold = (threshold + 1.0)/2.0;
     return int(threshold * 200.0);
 }
 
@@ -114,7 +107,7 @@ void PropertyMatrix::outputToFile(PropertyEnum propertyChoice) const {
     char delimeter = ',';
     ofstream fout(filename);
     fout << delimeter;
-    for (double t = 0.0; t < 1.01; t += 0.01) {
+    for (double t = 0.0; t < 1.001; t += 0.005) {
         fout << t << delimeter;
     }
     fout << endl;
@@ -127,10 +120,10 @@ void PropertyMatrix::outputToFile(PropertyEnum propertyChoice) const {
         else if (r == PEARSON_W_LOG_V_EXP)
             fout << "PEARSON_LOG_EXP";
         else
-            fout << "PEARSON_SINE_ARCSINE";
+            fout << "PEARSON_CUBE_ROOT";
 
         fout << delimeter;
-        for (unsigned int c = 100; c < (*this)[r].size(); c++) {
+        for (unsigned int c = 0; c < (*this)[r].size(); c++) {
             switch (propertyChoice) {
                 case DENSITY:
                     fout << (*this)[r][c].density;

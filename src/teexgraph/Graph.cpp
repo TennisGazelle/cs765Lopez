@@ -601,8 +601,8 @@ vector<double> Graph::localClustering(const Scope scope = FULL) {
 
 #pragma omp parallel for schedule(dynamic, 1) private(temp)
     for(int i = 0; i < n; i++) {
-        if(i % max(1, n / 20) == 0) // show status % without div by 0 errors
-            clog << " " << i / max(1, n / 100) << "%";
+//        if(i % max(1, n / 20) == 0) // show status % without div by 0 errors
+//            clog << " " << i / max(1, n / 100) << "%";
         if(inScope(i, scope)) {
             temp = nodeClusteringCoefficient(i);
             temparray[i] = temp;
@@ -637,8 +637,8 @@ long Graph::triangles() {
     vector<long> total(cpus, 0);
 #pragma omp parallel for schedule(dynamic, 1) private(tid,result)
     for(int i = 0; i < n; i++) {
-        if(i % max(1, n / 20) == 0) // show status % without div by 0 errors
-            clog << " " << i / max(1, n / 100) << "%";
+//        if(i % max(1, n / 20) == 0) // show status % without div by 0 errors
+//            clog << " " << i / max(1, n / 100) << "%";
         // tid = omp_get_thread_num();
         tid = 0;
         result = trianglesWedgesAround(i);
@@ -660,8 +660,8 @@ long Graph::wedges() {
     vector<long> total(cpus, 0);
 #pragma omp parallel for schedule(dynamic, 1) private(tid,result)
     for(int i = 0; i < n; i++) {
-        if(i % max(1, n / 20) == 0) // show status % without div by 0 errors
-            clog << " " << i / max(1, n / 100) << "%";
+//        if(i % max(1, n / 20) == 0) // show status % without div by 0 errors
+//            clog << " " << i / max(1, n / 100) << "%";
         tid = 0;//omp_get_thread_num();
         result = trianglesWedgesAround(i);
         total[tid] += result.second;
@@ -717,8 +717,8 @@ double Graph::graphClusteringCoefficient(const Scope scope = FULL) {
     vector<long double> wedges(cpus, 0);
 #pragma omp parallel for schedule(dynamic, 1) private(tid,result)             
     for(int i = 0; i < n; i++) {
-        if(i % max(1, n / 20) == 0) // show status % without div by 0 errors
-            clog << " " << i / max(1, n / 100) << "%";
+//        if(i % max(1, n / 20) == 0) // show status % without div by 0 errors
+//            clog << " " << i / max(1, n / 100) << "%";
         if(inScope(i, scope)) {
             tid = 0;//omp_get_thread_num();
             result = trianglesWedgesAround(i);
@@ -879,8 +879,8 @@ vector<long> Graph::distanceDistribution(const Scope scope = FULL, const double 
         if(donecount >= maxi)
             continue;
         tid = 0;//omp_get_thread_num();
-        if(donecount % max(1, maxi / 20) == 0) // show status % without div by 0 errors
-            clog << " " << donecount / max(1, maxi / 100) << "%";
+//        if(donecount % max(1, maxi / 20) == 0) // show status % without div by 0 errors
+//            clog << " " << donecount / max(1, maxi / 100) << "%";
 
         // sampled 
         if(samplesize < 1.0) {

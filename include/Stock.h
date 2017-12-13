@@ -19,10 +19,6 @@ public:
     void print() const;
     void getValuesFromFile();
     void calcPChanges();
-
-    // variables for graph stuff
-    double betweeness;
-    double pageRank;
 };
 
 

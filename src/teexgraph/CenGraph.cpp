@@ -83,14 +83,14 @@ vector<double> Graph::closenessCentrality(const Scope scope = LWCC, const double
         maxi = samplesize;
         samplesize = (double) maxi / (double) nodes(scope);
     }
-    clog << "Computing closeness values (based on a " << samplesize * 100
-            << "% sample of " << maxi << " nodes) with " << cpus << " CPUs..." << endl;
+//    clog << "Computing closeness values (based on a " << samplesize * 100
+//            << "% sample of " << maxi << " nodes) with " << cpus << " CPUs..." << endl;
 
 #pragma omp parallel for schedule(dynamic, 1) private(tid, a)
     for(int i = 0; i < maxi; i++) {
         tid = 0;//omp_get_thread_num();
-        if(i % max(1, maxi / 20) == 0) // show status % without div by 0 errors
-            clog << " " << i / max(1, maxi / 100) << "%";
+//        if(i % max(1, maxi / 20) == 0) // show status % without div by 0 errors
+//            clog << " " << i / max(1, maxi / 100) << "%";
 
         // sampled 
         if(samplesize < 1.0) {
@@ -184,8 +184,8 @@ vector<double> Graph::betweennessCentrality(const Scope scope = FULL, const doub
         until = (double) nodes(FULL) * samplesize;
     int prevs = -1;
 
-    clog << "Computing betweenness values (based on a " << samplesize * 100
-            << "% sample of " << until << " nodes) with " << cpus << " CPUs..." << endl;
+//    clog << "Computing betweenness values (based on a " << samplesize * 100
+//            << "% sample of " << until << " nodes) with " << cpus << " CPUs..." << endl;
 
 #pragma omp parallel for schedule(dynamic, 1) private(tid)
     for(int s = 0; s < until; s++) {
@@ -199,8 +199,8 @@ vector<double> Graph::betweennessCentrality(const Scope scope = FULL, const doub
         stack<int> S;
         int v, w;
 
-        if(s % max(1, until / 20) == 0) // show status % without div by 0 errors
-            clog << " " << s / max(1, until / 100) << "%";
+//        if(s % max(1, until / 20) == 0) // show status % without div by 0 errors
+//            clog << " " << s / max(1, until / 100) << "%";
 
         if(samplesize < 1.0) {
             prevs = s;
@@ -307,7 +307,7 @@ vector<double> Graph::pageRankCentrality() {
             maxval = max(maxval, centralities[i]);
         }
 
-        cerr << k << "% - error: " << setprecision(10) << error << " - value range: " << setprecision(10) << minval << "/" << setprecision(10) << maxval << endl;
+//        cerr << k << "% - error: " << setprecision(10) << error << " - value range: " << setprecision(10) << minval << "/" << setprecision(10) << maxval << endl;
     }
 
     return centralities;

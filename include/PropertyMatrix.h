@@ -51,7 +51,7 @@ enum PropertyEnum {
     PAGERANK_RANGE_MAX,
 };
 
-string to_string(const PropertyEnum pe);
+string to_string(PropertyEnum pe);
 
 // rows are offsets
 // columns are percentage threshold
@@ -69,13 +69,12 @@ public:
 
     void outputToFile(PropertyEnum propertyChoice) const;
 
-    vector<vector<pair<unsigned int, unsigned int> > > getTop10StrongestEdges() const;
-
-private:
-    int thresholdToIndex(double threshold) const;
-
-    string fileHeader = "../out/", fileExtension = ".csv";
     vector<vector<pair<unsigned int, unsigned int> > > top10StrongestEdgesLocations;
+    vector<vector<pair<unsigned int, unsigned int> > > getTop10StrongestEdges() const;
+private:
+
+    int thresholdToIndex(double threshold) const;
+    string fileHeader = "../out/", fileExtension = ".csv";
 };
 
 

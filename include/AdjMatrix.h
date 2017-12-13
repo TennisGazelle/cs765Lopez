@@ -15,7 +15,7 @@ using namespace std;
 enum PearsonKernel {
     SQUARE_V_SQUARE_ROOT,
     LOG_V_EXP,
-    SINE_V_ARCSINE,
+    CUBE_V_CUBE_ROOT,
 };
 
 class AdjMatrix : public Matrix {

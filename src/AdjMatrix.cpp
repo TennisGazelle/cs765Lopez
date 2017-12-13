@@ -49,19 +49,22 @@ double AdjMatrix::getPearsonCorrelationBetween(int i, int j, Market &market, Pea
     double r_i_avg, r_j_avg;
     vector<double> d_i, d_j;
 
+    if (i == j)
+        return 1;
+
     d_i = market[i].percentChanges;
     d_j = market[j].percentChanges;
 
     r_i_avg = Matrix::getValueDistribution(d_i).first;
     r_j_avg = Matrix::getValueDistribution(d_j).first;
-    for (int index = 0; index < d_i.size(); index++) {
+    for (unsigned int index = 0; index < d_i.size(); index++) {
         d_i[index] -= r_i_avg;
         d_j[index] -= r_j_avg;
     }
 
     double numerator = 0.0;
     double denominator_left = 0.0, denominator_right = 0.0;
-    for (int index = 0; index < d_i.size(); index++) {
+    for (unsigned int index = 0; index < d_i.size(); index++) {
         numerator += d_i[index]*d_j[index];
 
         // apply the correct function
@@ -75,9 +78,9 @@ double AdjMatrix::getPearsonCorrelationBetween(int i, int j, Market &market, Pea
                 denominator_left += exp(abs(d_i[index]));
                 denominator_right += exp(abs(d_j[index]));
                 break;
-            case SINE_V_ARCSINE:
-                denominator_left += asin(d_i[index]);
-                denominator_right += asin(d_j[index]);
+            case CUBE_V_CUBE_ROOT:
+                denominator_left += abs(pow(d_i[index], 3));
+                denominator_right += abs(pow(d_j[index], 3));
                 break;
         }
     }
@@ -92,9 +95,9 @@ double AdjMatrix::getPearsonCorrelationBetween(int i, int j, Market &market, Pea
             denominator_left = log(denominator_left);
             denominator_right = log(denominator_right);
             break;
-        case SINE_V_ARCSINE:
-            denominator_left = sin(denominator_left);
-            denominator_right = sin(denominator_right);
+        case CUBE_V_CUBE_ROOT:
+            denominator_left = cbrt(denominator_left);
+            denominator_right = cbrt(denominator_right);
     }
 
     return numerator / (denominator_left * denominator_right);
@@ -124,32 +127,35 @@ void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int o
     sort(values.begin(), values.end());
 
     unsigned int count = 0;
-    for (double t = 0.0; t < 1.01; t += 0.01) {
+    auto *g = new Graph();
+    for (double t = 0.0; t < 1.01; t += 0.005) {
         while (count < values.size() && values[count] < t) {
             count ++;
         }
 
         // generate graph and get stats at this point
-        Property property = propertyMatrix.at(t, offset);
-        property.g = new Graph();
-        property.g->loadFromMatrixWithThreshold((*this), t, marketStockNames);
+        Property property;
+        g->clear();
+        g->loadFromMatrixWithThreshold((*this), t, marketStockNames);
 
-        property.density = property.g->density(FULL);
-        property.avgDegree = property.g->averageDegree(FULL);
+        property.density = g->density(FULL);
+        property.avgDegree = g->averageDegree(FULL);
 //        property.avgDistance = property.g->averageDistance(FULL, 1.0);
         property.percentOfEdges = double(count)/double(values.size());
-        property.clusteringCoefficient = property.g->averageClusteringCoefficient(FULL);
+        property.clusteringCoefficient = g->averageClusteringCoefficient(FULL);
 //        property.betweennessDistribution = Matrix::getValueDistribution(g.betweennessCentrality(FULL, 1.0));
-        auto temp = property.g->outdegreeCentrality();
+        auto temp = g->outdegreeCentrality();
         property.outdegreeDistribution = Matrix::getValueDistribution(temp);
         property.outdegreeRange = Matrix::getValueRange(temp);
 
-        temp = property.g->pageRankCentrality();
+        temp = g->pageRankCentrality();
         property.pagerankDistribution = Matrix::getValueDistribution(temp);
         property.pagerankRange = Matrix::getValueRange(temp);
 
         propertyMatrix.assignAt(t, offset, property);
     }
+    delete g;
+//    propertyMatrix.top10StrongestEdgesLocations.push_back(top10EdgeWeights());
 }
 
 vector<pair<unsigned int, unsigned int> > AdjMatrix::top10EdgeWeights() const {

@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <assert.h>
 #include "Stock.h"
 
 Stock::Stock(const string &incomingSymbol) : symbol(incomingSymbol) {

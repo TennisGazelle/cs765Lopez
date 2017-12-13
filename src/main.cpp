@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     // declare the indexes at which to
     vector<bool> actionIndexes = defineActionTimes(market[0].data.size(), 0);
 
-    for (unsigned int offset = 0; offset < 1; offset++) {
+    for (unsigned int offset = 0; offset < MAX_OFFSET; offset++) {
         AdjMatrix correlationMatrix(market.size());
         cout << "working on offset " << offset << endl;
         vector<Portfolio> portfolios = market.initPortfolios(offset, actionIndexes);
@@ -186,9 +186,9 @@ int main(int argc, char *argv[]) {
     correlationMatrix.fillPearsonCorrelation(market, LOG_V_EXP);
     correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_LOG_V_EXP);
 
-    correlationMatrix.fillPearsonCorrelation(market, SINE_V_ARCSINE);
-    correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_SINE_V_ARCSINE);
-
+    correlationMatrix.fillPearsonCorrelation(market, CUBE_V_CUBE_ROOT);
+    correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_CUBE_V_CUBE_ROOT);
+    cout << "done with everything in life" << endl;
 
     // output to file
     properties.outputAllPropertiesToFile();

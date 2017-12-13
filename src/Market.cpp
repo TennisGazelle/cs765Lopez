@@ -23,6 +23,7 @@ void Market::print() const {
 
 vector<Portfolio> Market::initPortfolios(unsigned int offset, vector<bool> actionIndexes) {
     vector<Portfolio> portfolios;
+    portfolios.reserve(size());
     // put in a focus for each one
     for (unsigned int i = 0; i < size(); i++) {
         portfolios.emplace_back(Portfolio(&at(i), offset));

@@ -42,7 +42,7 @@ void Portfolio::buyAll(Market &market, unsigned int timestep) {
 }
 
 void Portfolio::sellAll(Market &market, unsigned int timestep) {
-    unsigned int timeToSell;
+    unsigned int timeToSell = timestep;
     // for each item in the list
     for (unsigned int i = 0; i < market.size(); i++) {
         timeToSell = timestep;
