@@ -28,12 +28,16 @@ pair<double, double> Matrix::getValueDistribution(vector<double> values) {
         sum += v;
     }
     average = sum / values.size();
+    if (isnan(average))
+        average = 0;
 
     sum = 0;
     for (auto &v : values) {
         sum += pow(average - v, 2);
     }
     variance = sum / (values.size() - 1);
+    if (isnan(variance))
+        variance = 0;
 
     return {average, variance};
 }

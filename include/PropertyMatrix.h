@@ -25,7 +25,8 @@ struct Property {
     pair<double, double> pagerankDistribution;
     pair<double, double> pagerankRange;
 
-    Graph *g;
+    pair<double, double> closenessDistribution;
+    pair<double, double> closenessRange;
 };
 
 enum PropertyEnum {
@@ -49,6 +50,11 @@ enum PropertyEnum {
     PAGERANK_DISTRIBUTION_STD_DEV,
     PAGERANK_RANGE_MIN,
     PAGERANK_RANGE_MAX,
+
+    CLOSENESS_DISTRIBUTION_AVG,
+    CLOSENESS_DISTRIBUTION_STD_DEV,
+    CLOSENESS_RANGE_MIN,
+    CLOSENESS_RANGE_MAX,
 };
 
 string to_string(PropertyEnum pe);
@@ -64,6 +70,8 @@ public:
     const Property& at(double threshold, unsigned int offset) const;
     Property& at(double threshold, unsigned int offset);
     void assignAt(double threshold, unsigned int offset, const Property& incomingProp);
+
+    void assignAt(unsigned int threshold, unsigned int offset, const Property &incomingProp);
 
     void outputAllPropertiesToFile() const;
 

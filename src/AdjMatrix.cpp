@@ -128,7 +128,8 @@ void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int o
 
     unsigned int count = 0;
     auto *g = new Graph();
-    for (double t = 0.0; t < 1.01; t += 0.005) {
+    for (unsigned int thousandth = 0; thousandth < 1000; thousandth += 5) {
+        double t = double(thousandth) / 1000.0;
         while (count < values.size() && values[count] < t) {
             count ++;
         }
@@ -140,11 +141,16 @@ void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int o
 
         property.density = g->density(FULL);
         property.avgDegree = g->averageDegree(FULL);
-//        property.avgDistance = property.g->averageDistance(FULL, 1.0);
+        property.avgDistance = g->averageDistance(FULL, 1.0);
         property.percentOfEdges = double(count)/double(values.size());
         property.clusteringCoefficient = g->averageClusteringCoefficient(FULL);
-//        property.betweennessDistribution = Matrix::getValueDistribution(g.betweennessCentrality(FULL, 1.0));
-        auto temp = g->outdegreeCentrality();
+
+        vector<double> temp;
+        temp = g->betweennessCentrality(FULL, 1.0);
+        property.betweennessDistribution = Matrix::getValueDistribution(temp);
+        property.betweennessRange = Matrix::getValueRange(temp);
+
+        temp = g->outdegreeCentrality();
         property.outdegreeDistribution = Matrix::getValueDistribution(temp);
         property.outdegreeRange = Matrix::getValueRange(temp);
 
@@ -152,7 +158,11 @@ void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int o
         property.pagerankDistribution = Matrix::getValueDistribution(temp);
         property.pagerankRange = Matrix::getValueRange(temp);
 
-        propertyMatrix.assignAt(t, offset, property);
+        temp = g->closenessCentrality(FULL, 1.0);
+        property.closenessDistribution = Matrix::getValueDistribution(temp);
+        property.closenessRange = Matrix::getValueRange(temp);
+
+        propertyMatrix.assignAt(thousandth / 5, offset, property);
     }
     delete g;
 //    propertyMatrix.top10StrongestEdgesLocations.push_back(top10EdgeWeights());

@@ -71,7 +71,7 @@ vector<double> Graph::closenessCentrality(const Scope scope = LWCC, const double
     }
 
     double samplesize = inputsamplesize;
-    const int cpus = 0;//omp_get_num_procs();
+    const int cpus = 1;//omp_get_num_procs();
     int tid, a, maxi = nodes(scope);
     double total = 0;
     vector< vector<long> > longarray(cpus, vector<long>(nodes(FULL), 0));
@@ -176,7 +176,7 @@ vector<double> Graph::betweennessCentrality(const Scope scope = FULL, const doub
         return vector<double>(nodes(FULL), -1);
     }
 
-    const int cpus = 0;//omp_get_num_procs();
+    const int cpus = 1;//omp_get_num_procs();
     int tid;
     vector< vector<long double> > doublelongarray(cpus, vector<long double>(nodes(FULL), 0));
     int until = nodes(scope);

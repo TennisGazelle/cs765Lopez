@@ -859,10 +859,10 @@ vector<long> Graph::distanceDistribution(const Scope scope = FULL, const double 
     if(nodes(scope) < 2)
         return vector<long>(1, 0);
 
-    const int cpus = 0;//omp_get_num_procs();
+    const int cpus = 1;//omp_get_num_procs();
     int tid, a, maxi = nodes(scope);
     double total = 0;
-    vector< vector<long> > longarray(0, vector<long>(n, 0));
+    vector<vector<long> > longarray(cpus, vector<long>(n, 0));
     vector<bool> done(n + 1, false); // for sampling
     int donecount = 0;
     if(samplesize < 1.0) {

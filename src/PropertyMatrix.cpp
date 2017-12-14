@@ -44,6 +44,15 @@ string to_string(const PropertyEnum pe) {
             return "PAGERANK_RANGE_MIN";
         case PAGERANK_RANGE_MAX:
             return "PAGERANK_RANGE_MAX";
+
+        case CLOSENESS_DISTRIBUTION_AVG:
+            return "CLOSENESS_DISTRIBUTION_AVG";
+        case CLOSENESS_DISTRIBUTION_STD_DEV:
+            return "CLOSENESS_DISTRIBUTION_STD_DEV";
+        case CLOSENESS_RANGE_MIN:
+            return "CLOSENESS_RANGE_MIN";
+        case CLOSENESS_RANGE_MAX:
+            return "CLOSENESS_RANGE_MAX";
     }
 }
 
@@ -60,6 +69,10 @@ PropertyMatrix::~PropertyMatrix() {
 
 void PropertyMatrix::assignAt(double threshold, unsigned int offset, const Property &incomingProp) {
     (*this)[offset][thresholdToIndex(threshold)] = incomingProp;
+}
+
+void PropertyMatrix::assignAt(unsigned int threshold, unsigned int offset, const Property &incomingProp) {
+    (*this)[offset][threshold] = incomingProp;
 }
 
 const Property& PropertyMatrix::at(double threshold, unsigned int offset) const {
@@ -99,6 +112,11 @@ void PropertyMatrix::outputAllPropertiesToFile() const {
     outputToFile(PAGERANK_DISTRIBUTION_STD_DEV);
     outputToFile(PAGERANK_RANGE_MIN);
     outputToFile(PAGERANK_RANGE_MAX);
+
+    outputToFile(CLOSENESS_DISTRIBUTION_AVG);
+    outputToFile(CLOSENESS_DISTRIBUTION_STD_DEV);
+    outputToFile(CLOSENESS_RANGE_MIN);
+    outputToFile(CLOSENESS_RANGE_MAX);
 }
 
 void PropertyMatrix::outputToFile(PropertyEnum propertyChoice) const {
@@ -178,6 +196,19 @@ void PropertyMatrix::outputToFile(PropertyEnum propertyChoice) const {
                     break;
                 case PAGERANK_RANGE_MAX:
                     fout << (*this)[r][c].pagerankRange.second;
+                    break;
+
+                case CLOSENESS_DISTRIBUTION_AVG:
+                    fout << (*this)[r][c].closenessDistribution.first;
+                    break;
+                case CLOSENESS_DISTRIBUTION_STD_DEV:
+                    fout << (*this)[r][c].closenessDistribution.second;
+                    break;
+                case CLOSENESS_RANGE_MIN:
+                    fout << (*this)[r][c].closenessRange.first;
+                    break;
+                case CLOSENESS_RANGE_MAX:
+                    fout << (*this)[r][c].closenessRange.second;
                     break;
             }
             fout << delimeter;
