@@ -120,9 +120,9 @@ void PropertyMatrix::outputAllPropertiesToFile() const {
 }
 
 void PropertyMatrix::outputToFile(PropertyEnum propertyChoice) const {
-    string filename = fileHeader + to_string(propertyChoice) + fileExtension;
+    string filename = FILE_HEADER + "properties/" + to_string(propertyChoice) + FILE_TSV_EXTENSION;
 
-    char delimeter = ',';
+    char delimeter = '\t';
     ofstream fout(filename);
     fout << delimeter;
     for (double t = 0.0; t < 1.001; t += 0.005) {

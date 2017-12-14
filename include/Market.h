@@ -15,6 +15,9 @@ public:
     void init();
     void print() const;
     vector<Portfolio> initPortfolios(unsigned int offset, vector<bool> actionIndexes);
+
+    double compareStocks(unsigned int i, unsigned int j);
+
 };
 
 

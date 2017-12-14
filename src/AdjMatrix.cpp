@@ -6,6 +6,7 @@
 #include <cmath>
 #include <teexgraph/Graph.h>
 #include <Matrix.h>
+#include <config.h>
 #include "AdjMatrix.h"
 
 AdjMatrix::AdjMatrix(unsigned int size) {
@@ -165,14 +166,13 @@ void AdjMatrix::varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int o
         propertyMatrix.assignAt(thousandth / 5, offset, property);
     }
     delete g;
-//    propertyMatrix.top10StrongestEdgesLocations.push_back(top10EdgeWeights());
 }
 
 vector<pair<unsigned int, unsigned int> > AdjMatrix::top10EdgeWeights() const {
     vector<pair<pair<unsigned int, unsigned int>, double> > top10(10);
     map<pair<unsigned int, unsigned int>, double> quickMapping;
 
-    for (unsigned int r = 0; size(); r++) {
+    for (unsigned int r = 0; r < size(); r++) {
         for (unsigned int c = r + 1; c < at(r).size(); c++) {
             quickMapping[{r, c}] = (*this)[r][c];
         }
@@ -194,4 +194,25 @@ vector<pair<unsigned int, unsigned int> > AdjMatrix::top10EdgeWeights() const {
     }
 
     return top10Keys;
+}
+
+vector<DetailedEdge> AdjMatrix::outputTop10EdgeWeights(const string& filename) const {
+    string full_filename = FILE_HEADER + "edges/" + filename + FILE_TSV_EXTENSION;
+    ofstream fout(full_filename);
+    auto locations = top10EdgeWeights();
+    vector<DetailedEdge> edges;
+    edges.reserve(10);
+
+    for (auto l : locations) {
+        fout << marketStockNames[l.first] << "\t" << marketStockNames[l.second] << "\t" << at(l.first)[l.second] << endl;
+        edges.push_back({
+                marketStockNames[l.first],
+                marketStockNames[l.second],
+                l.first,
+                l.second,
+                at(l.first)[l.second]});
+    }
+    fout.close();
+
+    return edges;
 }

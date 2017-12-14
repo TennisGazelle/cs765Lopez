@@ -44,3 +44,11 @@ vector<Portfolio> Market::initPortfolios(unsigned int offset, vector<bool> actio
 
     return portfolios;
 }
+
+double Market::compareStocks(unsigned int i, unsigned int j) {
+    double area = 0.0;
+    for (unsigned int t = 0; t < at(i).percentChanges.size(); t++) {
+        area += abs(at(i).percentChanges[t] - at(j).percentChanges[t]);
+    }
+    return area;
+}

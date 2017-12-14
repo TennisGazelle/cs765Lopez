@@ -82,7 +82,6 @@ public:
 private:
 
     int thresholdToIndex(double threshold) const;
-    string fileHeader = "../out/", fileExtension = ".csv";
 };
 
 

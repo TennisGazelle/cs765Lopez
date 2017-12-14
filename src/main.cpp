@@ -54,89 +54,10 @@ void outputEdgeListToFile(const string& filename, const AdjMatrix& matrix, Marke
     fout.close();
 }
 
-void outputPropertyMatrixToFile(const string& fileHeader, const PropertyMatrix& matrix, PropertyEnum pe) {
-    char delimeter = ',';
-    ofstream fout(fileHeader);
-    fout << delimeter;
-    for (double t = 0.0; t < 1.01; t += 0.01) {
-        fout << t << delimeter;
-    }
-    fout << endl;
-
-    for (unsigned int r = 0; r < matrix.size(); r++) {
-        if (r < MAX_OFFSET)
-            fout << r;
-        else
-            fout << "PEARSON";
-        fout << delimeter;
-        for (unsigned int c = 100; c < matrix[r].size(); c++) {
-            switch (pe) {
-                case DENSITY:
-                    fout << matrix[r][c].density;
-                    break;
-                case AVG_DEGREE:
-                    fout << matrix[r][c].avgDegree;
-                    break;
-                case AVG_DISTANCE:
-                    fout << matrix[r][c].avgDistance;
-                    break;
-                case PERCENT_EDGES:
-                    fout << matrix[r][c].percentOfEdges;
-                    break;
-                case CLUSTERING_COEFFICIENT:
-                    fout << matrix[r][c].clusteringCoefficient;
-                    break;
-
-                case BETWEENNESS_DISTRIBUTION_AVG:
-                    fout << matrix[r][c].betweennessDistribution.first;
-                    break;
-                case BETWEENNESS_DISTRIBUTION_STD_DEV:
-                    fout << matrix[r][c].betweennessDistribution.second;
-                    break;
-                case BETWEENESS_RANGE_MIN:
-                    fout << matrix[r][c].betweennessRange.first;
-                    break;
-                case BETWEENESS_RANGE_MAX:
-                    fout << matrix[r][c].betweennessRange.second;
-                    break;
-
-                case OUTDEGREE_DISTRIBUTION_AVG:
-                    fout << matrix[r][c].outdegreeDistribution.first;
-                    break;
-                case OUTDEGREE_DISTRIBUTION_STD_DEV:
-                    fout << matrix[r][c].outdegreeDistribution.second;
-                    break;
-                case OUTDEGREE_RANGE_MIN:
-                    fout << matrix[r][c].outdegreeRange.first;
-                    break;
-                case OUTDEGREE_RANGE_MAX:
-                    fout << matrix[r][c].outdegreeRange.second;
-                    break;
-
-                case PAGERANK_DISTRIBUTION_AVG:
-                    fout << matrix[r][c].pagerankDistribution.first;
-                    break;
-                case PAGERANK_DISTRIBUTION_STD_DEV:
-                    fout << matrix[r][c].pagerankDistribution.second;
-                    break;
-                case PAGERANK_RANGE_MIN:
-                    fout << matrix[r][c].pagerankRange.first;
-                    break;
-                case PAGERANK_RANGE_MAX:
-                    fout << matrix[r][c].pagerankRange.second;
-                    break;
-            }
-            fout << delimeter;
-        }
-        fout << endl;
-    }
-    fout.close();
-}
-
 vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
     vector<bool> indeces(size);
     for (unsigned int i = 0; i < indeces.size(); i++) {
-        indeces[i] = shootWithProbability(0.5);
+        indeces[i] = shootWithProbability(1);
         if (i+offset >= indeces.size()) {
             indeces[i] = false;
         }
@@ -144,20 +65,33 @@ vector<bool> defineActionTimes(unsigned int size, unsigned int offset) {
     return indeces;
 }
 
-void makeGraph(const vector< vector<double> >& matrix, const Market& market) {
-    Graph g;
-    vector<string> stockNames(matrix.size());
+void evaluate(Market& market, vector< vector<DetailedEdge> >& edges) {
+    ofstream fout(FILE_HEADER + "phi" + FILE_TSV_EXTENSION);
 
-    for(unsigned int i = 0; i < stockNames.size(); i++) {
-        stockNames[i] = market[i].symbol;
+    fout << "\t\t" << "\\hline" << endl;
+    fout << "\t\t" << "$\\phi$ & Value \\\\" << endl;
+
+    fout << "\t\t" << "\\hline" << endl;
+    fout << "\t\t" << "\\hline" << endl;
+    for (unsigned int offset = 0; offset < edges.size(); offset++) {
+        double phi = 0.0;
+        for (auto edge : edges[offset]) {
+            phi += market.compareStocks(edge.r, edge.c);
+        }
+        fout << "\t\t";
+        if (offset < MAX_OFFSET) {
+            fout << offset;
+        } else if (offset == PEARSON_W_SQUARE_V_SQUARE_ROOT) {
+            fout << "PEARSON_SQUARE_ROOT";
+        } else if (offset == PEARSON_W_LOG_V_EXP) {
+            fout << "PEARSON_LOG_EXP";
+        } else if (offset == PEARSON_W_CUBE_V_CUBE_ROOT) {
+            fout << "PEARSON_CUBE_ROOT";
+        }
+        fout << "\t&\t" << phi << " \\\\" << endl;
+        cout << "phi value for offset of " << offset << " : " << phi << endl;
     }
-    g.loadFromMatrixWithThreshold(matrix, 0.9, stockNames);
-
-    vector<double> centralities = g.pageRankCentrality();
-
-    for (unsigned int i = 0; i < stockNames.size(); i++) {
-        cout << stockNames[i] << ": " << centralities[i] << endl;
-    }
+    fout << "\t\t" << "\\hline" << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -170,25 +104,33 @@ int main(int argc, char *argv[]) {
     // declare the indexes at which to
     vector<bool> actionIndexes = defineActionTimes(market[0].data.size(), 0);
 
-    for (unsigned int offset = 0; offset < MAX_OFFSET; offset++) {
+    vector< vector<DetailedEdge> > edges;
+    edges.reserve(53);
+
+    for (unsigned int offset = 0; offset < 1; offset++) {
         AdjMatrix correlationMatrix(market.size());
         cout << "working on offset " << offset << endl;
         vector<Portfolio> portfolios = market.initPortfolios(offset, actionIndexes);
         correlationMatrix.fillCorrelationMatrix(market, portfolios);
         correlationMatrix.varyEdgeThreshold(properties, offset);
+        edges.push_back(correlationMatrix.outputTop10EdgeWeights("offset-" + to_string(offset)));
     }
 
     AdjMatrix correlationMatrix(market.size());
     cout << "working on pearson" << endl;
     correlationMatrix.fillPearsonCorrelation(market, SQUARE_V_SQUARE_ROOT);
     correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_SQUARE_V_SQUARE_ROOT);
+    edges.push_back(correlationMatrix.outputTop10EdgeWeights("Pearson-SQUARE_V_SQUARE_ROOT"));
 
     correlationMatrix.fillPearsonCorrelation(market, LOG_V_EXP);
     correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_LOG_V_EXP);
+    edges.push_back(correlationMatrix.outputTop10EdgeWeights("Pearson-LOG_V_EXP"));
 
     correlationMatrix.fillPearsonCorrelation(market, CUBE_V_CUBE_ROOT);
     correlationMatrix.varyEdgeThreshold(properties, PEARSON_W_CUBE_V_CUBE_ROOT);
-    cout << "done with everything in life" << endl;
+    edges.push_back(correlationMatrix.outputTop10EdgeWeights("Pearson-CUBE_V_CUBE_ROOT"));
+
+    evaluate(market, edges);
 
     // output to file
     properties.outputAllPropertiesToFile();

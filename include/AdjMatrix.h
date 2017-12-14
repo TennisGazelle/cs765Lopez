@@ -18,6 +18,12 @@ enum PearsonKernel {
     CUBE_V_CUBE_ROOT,
 };
 
+struct DetailedEdge {
+    string r_stock, c_stock;
+    unsigned int r, c;
+    double value;
+};
+
 class AdjMatrix : public Matrix {
 public:
     AdjMatrix(unsigned int size);
@@ -32,6 +38,8 @@ public:
     void makeGraph(Market &m);
 
     void varyEdgeThreshold(PropertyMatrix& propertyMatrix, unsigned int offset) const;
+
+    vector<DetailedEdge> outputTop10EdgeWeights(const string& filename) const;
 
     vector<pair<unsigned int, unsigned int> > top10EdgeWeights() const;
 
