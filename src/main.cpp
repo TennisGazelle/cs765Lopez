@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     vector< vector<DetailedEdge> > edges;
     edges.reserve(53);
 
-    for (unsigned int offset = 0; offset < 1; offset++) {
+    for (unsigned int offset = 0; offset < MAX_OFFSET; offset++) {
         AdjMatrix correlationMatrix(market.size());
         cout << "working on offset " << offset << endl;
         vector<Portfolio> portfolios = market.initPortfolios(offset, actionIndexes);
